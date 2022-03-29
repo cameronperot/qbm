@@ -1,0 +1,16 @@
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - black
+  - flake8
+  - ipykernel
+  - ipython
+  - ipython-autotime
+  - jupyterlab
+  - pip
+  - python-language-server
+  - pip:
+    - jupyterlab_code_formatter
+    - jupyterlab_vim
+    - pynvim
