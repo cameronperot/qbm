@@ -1,6 +1,7 @@
 # Quantum Boltzmann Machines
-The QBM implemented here is based on Quantum Boltzman Machine by Amin et al. [[1]](#1).
-The `qbm` Python package is designed to train models using both a simulation and a D-Wave quantum annealer.
+The `qbm` Python package is designed for training and analyzing quantum Boltzmann machines (QBMs) using either a simulation or a D-Wave quantum annealer.
+The QBM implemented here is based on the work in *Quantum Boltzman Machine* by Amin et al. [[1]](#1).
+This package originated as part of the thesis [*Quantum Boltzmann Machines: Applications in Quantitative Finance*](https://jugit.fz-juelich.de/qip/qbm-quant-finance).
 
 ## Table of Contents
 * [Installation](#installation)
@@ -91,11 +92,11 @@ model.sample(
 #### Saving and Loading
 The model can be saved with
 ```
-model.save(file_path)
+model.save("/path/to/model.pkl")
 ```
 and loaded again with
 ```
-BQRBM.load(file_path)
+model = BQRBM.load("/path/to/model.pkl")
 ```
 
 ## Example
