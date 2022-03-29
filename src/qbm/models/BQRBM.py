@@ -202,7 +202,8 @@ class BQRBM(QBMBase):
         Saves the BQRBM model at file_path. Necessary because of pickling issues with the
         qpu and sampler objects.
 
-        :param file_path: Path to save the model to.
+        :param file_path: Path to save the model to. Must be a Path object or a string with
+            ".pkl" file extension.
         :param reinitialize_annealer: If True and has attribute self.annealer_params, then
             will call self._initialize_annealer() after saving.
         """
@@ -221,7 +222,8 @@ class BQRBM(QBMBase):
         Loads the BQRBM model at file_path. Necessary because of pickling issues with the
         qpu and sampler objects.
 
-        :param file_path: Path to the model to load.
+        :param file_path: Path to the model to load. Must be a Path object or a string with
+            ".pkl" file extension.
         :param initialize_annealer: If True and has attribute self.annealer_params, then
             will call self._initialize_annealer().
 
