@@ -1,0 +1,10 @@
+[run]
+source =
+    qbm
+
+[report]
+omit =
+    */qbm/plotting/*
+exclude_lines =
+    if __name__ == .__main__.:
+    pragma: no cover

@@ -1,0 +1,33 @@
+test:
+  stage: test
+  image: python:3.9-bullseye
+  script:
+    - pip install .
+    - pip install pytest pytest-cov
+    - python -c "import qbm"
+    - python -c "import qbm.simulation"
+    - python -c "import qbm.utils"
+    - python -c "import qbm.models"
+    - pytest --cov-report=term-missing --cov=qbm --cov-config=.coveragerc
+    - coverage xml
+  artifacts:
+    expire_in: 1 week
+    reports:
+      cobertura: coverage.xml
+pages:
+  stage: deploy
+  image: python:3.9-bullseye
+  script:
+    - pip install .
+    - pip install Sphinx sphinx_rtd_theme m2r2 anybadge
+    - sphinx-apidoc -f -o docs/source src/qbm
+    - sphinx-build -d docs/_build/doctrees docs/source docs/_build/html
+    - mv docs/_build/html public
+    - anybadge --value=master --file=docs.svg --label=docs --color=#0f80c0
+    - anybadge --value=master --file=report.svg --label=report --color=#008080
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - public
+      - docs.svg
+      - report.svg
