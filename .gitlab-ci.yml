@@ -24,10 +24,8 @@ pages:
     - sphinx-build -d docs/_build/doctrees docs/source docs/_build/html
     - mv docs/_build/html public
     - anybadge --value=master --file=docs.svg --label=docs --color=#0f80c0
-    - anybadge --value=master --file=report.svg --label=report --color=#008080
   artifacts:
     expire_in: 1 week
     paths:
       - public
       - docs.svg
-      - report.svg
