@@ -7,9 +7,8 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   qbm.metrics
-   qbm.plotting
-   qbm.sampling
+   qbm.models
+   qbm.simulation
    qbm.utils
 
 Module contents
