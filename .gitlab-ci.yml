@@ -10,10 +10,7 @@ test:
     - python -c "import qbm.models"
     - pytest --cov-report=term-missing --cov=qbm --cov-config=.coveragerc
     - coverage xml
-  artifacts:
-    expire_in: 1 week
-    reports:
-      cobertura: coverage.xml
+  coverage: '/TOTAL.*\s+(\d+\%)/'
 pages:
   stage: deploy
   image: python:3.9-bullseye
