@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Readme File &mdash; Quantum Boltzmann Machines  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="qbm" href="modules.html" />
+    <link rel="prev" title="Quantum Boltzmann Machines" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Quantum Boltzmann Machines
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Readme File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#quantum-boltzmann-machines">Quantum Boltzmann Machines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Conda Environment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Basic Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">BQRBM Model</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id7">Instantiation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id8">Training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">Sampling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">Saving and Loading</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id11">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#id12">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">qbm</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Quantum Boltzmann Machines</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Readme File</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/readme_link.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="readme-file">
+<h1>Readme File<a class="headerlink" href="#readme-file" title="Permalink to this heading"></a></h1>
+</section>
+<section id="quantum-boltzmann-machines">
+<h1>Quantum Boltzmann Machines<a class="headerlink" href="#quantum-boltzmann-machines" title="Permalink to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">qbm</span></code> Python package is designed for training and analyzing quantum Boltzmann machines (QBMs) using either a simulation or a D-Wave quantum annealer.
+The QBM implemented here is based on the work in <em>Quantum Boltzman Machine</em> by Amin et al. <a class="reference external" href="#1">[1]</a>.
+This package originated as part of the thesis <a class="reference external" href="https://jugit.fz-juelich.de/qip/qbm-quant-finance">*Quantum Boltzmann Machines: Applications in Quantitative Finance*</a>.</p>
+<section id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="#installation">Installation</a></p>
+<ul>
+<li><p><a class="reference external" href="#conda-environment">Conda Environment</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="#usage">Usage</a></p>
+<ul>
+<li><p><a class="reference external" href="#basic-configuration">Basic Configuration</a></p></li>
+<li><p><a class="reference external" href="#bqrbm-model">BQRBM Model</a></p>
+<ul>
+<li><p><a class="reference external" href="#instantiation">Instantiation</a></p></li>
+<li><p><a class="reference external" href="#training">Training</a></p></li>
+<li><p><a class="reference external" href="#sampling">Sampling</a></p></li>
+<li><p><a class="reference external" href="#saving-and-loading">Saving and Loading</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="#example">Example</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="#references">References</a></p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>Installation<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">qbm</span></code> package itself can be installed with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@jugit</span><span class="o">.</span><span class="n">fz</span><span class="o">-</span><span class="n">juelich</span><span class="o">.</span><span class="n">de</span><span class="p">:</span><span class="n">qip</span><span class="o">/</span><span class="n">qbm</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">qbm</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
+</pre></div>
+</div>
+<section id="id3">
+<h3>Conda Environment<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h3>
+<p>A predefined conda environment is already configured and ready for installation.
+This can be installed by running</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+<p>or alternatively, running the <code class="docutils literal notranslate"><span class="pre">conda-create-env.sh</span></code> script (make sure to properly set the env vars in the script).</p>
+<p>Extra dev dependencies can be installed with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">update</span> <span class="o">--</span><span class="n">file</span> <span class="n">environment</span><span class="o">-</span><span class="n">dev</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id4">
+<h2>Usage<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h2>
+<section id="id5">
+<h3>Basic Configuration<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">qbm</span></code> package is mainly configured around the project directory, which can be set with the <code class="docutils literal notranslate"><span class="pre">QBM_PROJECT_DIR</span></code> environment variable.
+Once the environment variable is set one can use the <code class="docutils literal notranslate"><span class="pre">qbm.utils.get_project_dir()</span></code> function to get a path object to the directory.</p>
+</section>
+<section id="id6">
+<h3>BQRBM Model<a class="headerlink" href="#id6" title="Permalink to this heading"></a></h3>
+<p>The BQRBM, or bound-based quantum restricted Boltzmann machine, is a quantum Boltzmann machine that has intra-layer restrictions and is trained via maximization of the log-likelihood lower bound.
+The model currently only has the ability to train in the specific case where <code class="docutils literal notranslate"><span class="pre">s_freeze</span> <span class="pre">=</span> <span class="pre">1</span></code>, i.e., when it reduces to a classical RBM trained with quantum assistance, because estimating the effective inverse temperature is nontrivial for the general case.</p>
+<p>All of the arguments to the methods below are further explained in their respective docstrings.</p>
+<section id="id7">
+<h4>Instantiation<a class="headerlink" href="#id7" title="Permalink to this heading"></a></h4>
+<p>A BQRBM model can be instantiated as (for example)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">BQRBM</span><span class="p">(</span>
+    <span class="n">V_train</span><span class="p">,</span>
+    <span class="n">n_hidden</span><span class="p">,</span>
+    <span class="n">A_freeze</span><span class="p">,</span>
+    <span class="n">B_freeze</span><span class="p">,</span>
+    <span class="n">beta_initial</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">simulation_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;beta&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>One needs to choose whether or not they want to train a model using a simulation or an annealer, and this is done by passing either <code class="docutils literal notranslate"><span class="pre">simulation_params</span></code> or <code class="docutils literal notranslate"><span class="pre">annealer_params</span></code>.
+Whichever is passed decides how the model is trained.</p>
+</section>
+<section id="id8">
+<h4>Training<a class="headerlink" href="#id8" title="Permalink to this heading"></a></h4>
+<p>The model can be trained by running</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span>
+    <span class="n">learning_rate_beta</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span>
+    <span class="n">mini_batch_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">10_000</span><span class="p">,</span>
+    <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h4>Sampling<a class="headerlink" href="#id9" title="Permalink to this heading"></a></h4>
+<p>The model can generate samples by running</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+    <span class="n">n_samples</span><span class="p">,</span>
+    <span class="n">answer_mode</span><span class="o">=</span><span class="s2">&quot;raw&quot;</span><span class="p">,</span>
+    <span class="n">use_gauge</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">binary</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h4>Saving and Loading<a class="headerlink" href="#id10" title="Permalink to this heading"></a></h4>
+<p>The model can be saved with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;/path/to/model.pkl&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and loaded again with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">BQRBM</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/path/to/model.pkl&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="id11">
+<h2>Example<a class="headerlink" href="#id11" title="Permalink to this heading"></a></h2>
+<p>An example notebook can be found <a class="reference external" href="example/qbm_example.ipynb">here</a></p>
+</section>
+</section>
+<section id="id12">
+<h1>References<a class="headerlink" href="#id12" title="Permalink to this heading"></a></h1>
+<p><span class="raw-html-m2r"><a name="1">[1]</a></span> Mohammad H. Amin et al. “Quantum Boltzmann Machine”. In: Phys. Rev. X 8 (2 May 2018), p. 021050. doi: 10.1103/PhysRevX.8.021050. url: <a class="reference external" href="https://link.aps.org/doi/10.1103/PhysRevX.8.021050">https://link.aps.org/doi/10.1103/PhysRevX.8.021050</a>.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Quantum Boltzmann Machines" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="qbm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Cameron Perot.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
