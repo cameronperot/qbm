@@ -19,7 +19,7 @@ This package originated as part of the thesis [*Quantum Boltzmann Machines: Appl
 ## Installation
 The `qbm` package itself can be installed with
 ```
-git clone git@jugit.fz-juelich.de:qip/qbm.git
+git clone https://github.com/cameronperot/qbm.git
 cd qbm
 pip install .
 ```
