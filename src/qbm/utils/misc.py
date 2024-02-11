@@ -1,10 +1,10 @@
 import json
 import os
 import pickle
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-
-from pathlib import Path
 from numpy.random import MT19937, RandomState, SeedSequence
 
 
@@ -27,7 +27,8 @@ def df_ensemble_stats(dfs):
 
 def df_stats(df):
     """
-    Compute the min, max, mean, median, and standard deviation of the columns in the dataframe.
+    Compute the min, max, mean, median, and standard deviation of the columns in the
+    dataframe.
 
     :param df: Dataframe.
 
@@ -96,7 +97,9 @@ def get_rng(seed=None):
     return RandomState(MT19937(SeedSequence(seed)))
 
 
-def kl_divergence(p_data, q_data, n_bins=32, epsilon_smooth=None, relative_smooth=False):
+def kl_divergence(
+    p_data, q_data, n_bins=32, epsilon_smooth=None, relative_smooth=False
+):
     """
     Computes the D_KL(p_data || p_samples).
 
@@ -145,7 +148,7 @@ def load_artifact(file_path):
 
     :returns: Loaded python object.
     """
-    if type(file_path) == str:
+    if isinstance(file_path, str):
         file_path = Path(file_path)
 
     if not file_path.exists() or file_path.suffix not in (".json", ".pkl"):
@@ -162,8 +165,8 @@ def load_artifact(file_path):
 @np.vectorize
 def lr_exp_decay(epoch, decay_epoch, period, base=2):
     """
-    Exponential decay function for use in learning rate scheduling. It is relative, so one
-    must multiply the base learning rate by the output of this function.
+    Exponential decay function for use in learning rate scheduling. It is relative, so
+    one must multiply the base learning rate by the output of this function.
 
     :param epoch: Current epoch.
     :param decay_epoch: Epoch at which to begin the decay.
@@ -182,7 +185,7 @@ def save_artifact(artifact, file_path):
     :param artifact: Python object to save.
     :param file_path: Path of the file to save.
     """
-    if type(file_path) == str:
+    if isinstance(file_path, str):
         file_path = Path(file_path)
 
     if not file_path.parent.exists():

@@ -1,4 +1,4 @@
-from .QBMBase import QBMBase
-from .BQRBM import BQRBM
+from .QBMBase import QBMBase  # isort:skip
+from .BQRBM import BQRBM  # isort:skip
 
 __all__ = ["QBMBase", "BQRBM"]

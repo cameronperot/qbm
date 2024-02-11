@@ -86,10 +86,10 @@ class Discretizer:
 
         :returns: A bit string representation of x.
         """
-        scaling_factor = (2 ** n_bits - 1) / (x_max - x_min)
+        scaling_factor = (2**n_bits - 1) / (x_max - x_min)
 
         x = round((x - x_min) * scaling_factor)
-        assert x >= 0 and x <= 2 ** n_bits - 1
+        assert x >= 0 and x <= 2**n_bits - 1
         return x
 
     @staticmethod
@@ -105,9 +105,9 @@ class Discretizer:
 
         :returns: A float representation of x.
         """
-        scaling_factor = (2 ** n_bits - 1) / (x_max - x_min)
+        scaling_factor = (2**n_bits - 1) / (x_max - x_min)
 
-        assert x < 2 ** n_bits
+        assert x < 2**n_bits
         return x / scaling_factor + x_min
 
     def discretize_df(self, df):

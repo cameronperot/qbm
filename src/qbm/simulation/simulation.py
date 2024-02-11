@@ -1,7 +1,6 @@
 import numpy as np
-from scipy.sparse import csr_matrix, kron, identity, diags
 from scipy.linalg import eigh
-
+from scipy.sparse import csr_matrix, diags, identity, kron
 
 # set constants
 sparse_X = csr_matrix(([1, 1], ([0, 1], [1, 0])), dtype=np.float64)
@@ -44,7 +43,7 @@ def sparse_kron(i, n_qubits, A):
     :returns: I_{2^i} ⊗ A ⊗ I_{2^(n_qubits-i-1)}.
     """
     if i != 0 and i != n_qubits - 1:
-        return kron(kron(identity(2 ** i), A), identity(2 ** (n_qubits - i - 1)))
+        return kron(kron(identity(2**i), A), identity(2 ** (n_qubits - i - 1)))
     if i == 0:
         return kron(A, identity(2 ** (n_qubits - 1)))
     if i == n_qubits - 1:
@@ -65,7 +64,7 @@ def compute_H(h, J, A, B, n_qubits, pauli_kron):
     :returns: Hamiltonian matrix H.
     """
     # diagonal terms
-    H_diag = np.zeros(2 ** n_qubits)
+    H_diag = np.zeros(2**n_qubits)
     for i in range(n_qubits):
         # linear terms
         if h[i] != 0:
@@ -81,7 +80,7 @@ def compute_H(h, J, A, B, n_qubits, pauli_kron):
         return np.diag(H_diag)
 
     # off-diagonal terms
-    H = csr_matrix((2 ** n_qubits, 2 ** n_qubits), dtype=np.float64)
+    H = csr_matrix((2**n_qubits, 2**n_qubits), dtype=np.float64)
     for i in range(n_qubits):
         H -= A * pauli_kron["x", i]
 

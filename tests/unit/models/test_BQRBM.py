@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from scipy.special import expit
 
 from qbm.models import BQRBM
 from qbm.utils import Discretizer, get_rng
@@ -171,7 +170,10 @@ def test_init_simultor_annealer_none_fail(monkeypatch):
 
     with pytest.raises(Exception):
         model = BQRBM(
-            V_train=V_train, n_hidden=n_hidden, A_freeze=A_freeze, B_freeze=B_freeze,
+            V_train=V_train,
+            n_hidden=n_hidden,
+            A_freeze=A_freeze,
+            B_freeze=B_freeze,
         )
 
 
@@ -261,7 +263,8 @@ def test_sample_simulation(monkeypatch, model_simulation):
     rng = get_rng(0)
     state_vectors = rng.rand(n_samples, n_qubits)
     monkeypatch.setattr(
-        "qbm.models.BQRBM._sample_simulation", lambda self, n_samples, binary: "test",
+        "qbm.models.BQRBM._sample_simulation",
+        lambda self, n_samples, binary: "test",
     )
 
     model = model_simulation
@@ -294,7 +297,7 @@ def test__compute_positive_grads(model_simulation):
     V_pos = rng.rand(n_samples, n_visible)
     Γ = model_simulation.beta * model_simulation.A_freeze
     b_eff = model_simulation.b[n_visible:] + V_pos @ model_simulation.W
-    D = np.sqrt(Γ ** 2 + b_eff ** 2)
+    D = np.sqrt(Γ**2 + b_eff**2)
     H_pos = (b_eff / D) * np.tanh(D)
 
     grads = {
@@ -320,10 +323,11 @@ def test__compute_negative_grads(monkeypatch, model_simulation):
     V_neg = state_vectors[:, :n_visible]
     Γ = model_simulation.beta * model_simulation.A_freeze
     b_eff = model_simulation.b[n_visible:] + V_neg @ model_simulation.W
-    D = np.sqrt(Γ ** 2 + b_eff ** 2)
+    D = np.sqrt(Γ**2 + b_eff**2)
     H_neg = (b_eff / D) * np.tanh(D)
     monkeypatch.setattr(
-        "qbm.models.BQRBM.sample", lambda self, n_samples: {"state_vectors": state_vectors}
+        "qbm.models.BQRBM.sample",
+        lambda self, n_samples: {"state_vectors": state_vectors},
     )
 
     grads = {
@@ -351,7 +355,7 @@ def test__update_beta(monkeypatch, model_simulation):
     V_train = model_simulation.V_train
     VW_train = V_train @ model_simulation.W
     b_eff = model_simulation.b[n_visible:] + VW_train
-    D = np.sqrt((model_simulation.beta * model_simulation.A_freeze) ** 2 + b_eff ** 2)
+    D = np.sqrt((model_simulation.beta * model_simulation.A_freeze) ** 2 + b_eff**2)
     H_train = (b_eff / D) * np.tanh(D)
     E_train = model_simulation._mean_classical_energy(V_train, H_train, VW_train)
 

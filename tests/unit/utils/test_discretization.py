@@ -12,12 +12,12 @@ def df_and_discretization_params(request):
     n_bits = request.param
     df = pd.DataFrame(
         {
-            "a": np.arange(2 ** n_bits),
-            "b": np.linspace(0, 10, 2 ** n_bits),
-            "c": np.linspace(-10, 10, 2 ** n_bits),
-            "a_bit": np.ones(2 ** n_bits),
-            "b_bit": np.zeros(2 ** n_bits),
-            "c_bit": np.ones(2 ** n_bits),
+            "a": np.arange(2**n_bits),
+            "b": np.linspace(0, 10, 2**n_bits),
+            "c": np.linspace(-10, 10, 2**n_bits),
+            "a_bit": np.ones(2**n_bits),
+            "b_bit": np.zeros(2**n_bits),
+            "c_bit": np.ones(2**n_bits),
         }
     )
 
@@ -29,7 +29,7 @@ def test_bit_vector_to_int(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
 
-    for i in range(2 ** n_bits):
+    for i in range(2**n_bits):
         bit_vector = discretizer.int_to_bit_vector(i, n_bits)
 
         assert bit_vector == [int(x) for x in bin(i)[2:].zfill(n_bits)]
@@ -40,7 +40,7 @@ def test_bit_vector_to_string(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
 
-    for i in range(2 ** n_bits):
+    for i in range(2**n_bits):
         bit_vector = discretizer.int_to_bit_vector(i, n_bits)
         bit_string = discretizer.bit_vector_to_string(bit_vector)
 
@@ -52,7 +52,7 @@ def test_int_to_bit_vector(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
 
-    for i in range(2 ** n_bits):
+    for i in range(2**n_bits):
         bit_vector = discretizer.int_to_bit_vector(i, n_bits)
         i_recovered = discretizer.bit_vector_to_int(bit_vector)
 
@@ -71,8 +71,8 @@ def test_discretize(df_and_discretization_params):
         x_discrete = discretizer.discretize(df[column], **discretizer.params[column])
 
         assert x_discrete.min() == 0
-        assert x_discrete.max() == 2 ** n_bits - 1
-        assert (x_discrete == np.arange(2 ** n_bits)).all()
+        assert x_discrete.max() == 2**n_bits - 1
+        assert (x_discrete == np.arange(2**n_bits)).all()
 
 
 @pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)

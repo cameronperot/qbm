@@ -25,7 +25,7 @@ class PowerTransformer:
             self.columns = columns
         self.power = power
         self.threshold = threshold
-        self.offset = threshold - threshold ** power
+        self.offset = threshold - threshold**power
 
         self.μ = {}
         self.σ = {}

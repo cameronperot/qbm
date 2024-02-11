@@ -1,23 +1,23 @@
 import json
+import pickle
+from pathlib import Path
+from unittest.mock import mock_open, patch
+
 import numpy as np
 import pandas as pd
-import pickle
 import pytest
-
-from pathlib import Path
-from unittest.mock import patch, mock_open
 
 from qbm.utils import (
     df_ensemble_stats,
     df_stats,
     filter_df_on_values,
-    get_rng,
     get_project_dir,
+    get_rng,
     kl_divergence,
     load_artifact,
+    lower_tail_concentration,
     lr_exp_decay,
     save_artifact,
-    lower_tail_concentration,
     upper_tail_concentration,
 )
 
@@ -394,7 +394,7 @@ def test_save_artifact_json_success_str(mock_dump, monkeypatch):
 
 
 @patch("qbm.utils.misc.pickle.dump")
-def test_save_artifact_pickle_success(mock_dump, monkeypatch):
+def test_save_artifact_pickle_success_str_path(mock_dump, monkeypatch):
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = "/test/path/file.pkl"

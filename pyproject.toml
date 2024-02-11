@@ -54,6 +54,9 @@ build-backend = "hatchling.build"
 [tool.black]
 line-length = 92
 
+[tool.isort]
+profile = "black"
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--cov --capture=no"

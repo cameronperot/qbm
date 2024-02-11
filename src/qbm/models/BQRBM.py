@@ -5,8 +5,8 @@ import numpy as np
 from dwave.system import DWaveSampler, FixedEmbeddingComposite
 
 from qbm.models import QBMBase
-from qbm.utils import Discretizer, load_artifact, save_artifact
 from qbm.simulation import compute_H, compute_rho, get_pauli_kron
+from qbm.utils import Discretizer, load_artifact, save_artifact
 
 
 class BQRBM(QBMBase):
@@ -274,7 +274,7 @@ class BQRBM(QBMBase):
             (mini_batch_size, n_visible).
         """
         b_hidden = self.b[self.n_visible :] + V_pos @ self.W
-        D = np.sqrt((self.beta * self.A_freeze) ** 2 + b_hidden ** 2)
+        D = np.sqrt((self.beta * self.A_freeze) ** 2 + b_hidden**2)
         H_pos = (b_hidden / D) * np.tanh(D)
 
         self.grads["b_pos"] = np.concatenate((V_pos.mean(axis=0), H_pos.mean(axis=0)))
@@ -292,7 +292,7 @@ class BQRBM(QBMBase):
 
         V_neg = state_vectors[:, : self.n_visible]
         b_hidden = self.b[self.n_visible :] + V_neg @ self.W
-        D = np.sqrt((self.beta * self.A_freeze) ** 2 + b_hidden ** 2)
+        D = np.sqrt((self.beta * self.A_freeze) ** 2 + b_hidden**2)
         H_neg = (b_hidden / D) * np.tanh(D)
 
         self.grads["b_neg"] = np.concatenate((V_neg.mean(axis=0), H_neg.mean(axis=0)))
@@ -423,7 +423,7 @@ class BQRBM(QBMBase):
         samples["E"] = np.diag(H).copy()
         samples["p"] = np.diag(rho).copy()
         samples["states"] = self.rng.choice(
-            range(2 ** self.n_qubits), size=n_samples, p=samples["p"]
+            range(2**self.n_qubits), size=n_samples, p=samples["p"]
         )
         samples["state_vectors"] = self._binary_to_eigen(
             np.vstack(
@@ -450,7 +450,7 @@ class BQRBM(QBMBase):
         # compute the train energy
         VW_train = self.V_train @ self.W
         b_eff = self.b[self.n_visible :] + VW_train
-        D = np.sqrt((self.beta * self.A_freeze) ** 2 + b_eff ** 2)
+        D = np.sqrt((self.beta * self.A_freeze) ** 2 + b_eff**2)
         H_train = (b_eff / D) * np.tanh(D)
         E_train = self._mean_classical_energy(self.V_train, H_train, VW_train)
 
