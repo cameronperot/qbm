@@ -17,11 +17,9 @@ This package originated as part of the thesis [*Quantum Boltzmann Machines: Appl
 * [References](#references)
 
 ## Installation
-The `qbm` package itself can be installed with
+The `qbm` package can be installed with
 ```
-git clone https://github.com/cameronperot/qbm.git
-cd qbm
-pip install .
+pip install qbm
 ```
 
 ### Conda Environment
@@ -30,7 +28,6 @@ This can be installed by running
 ```
 conda env create -f environment.yml
 ```
-or alternatively, running the `conda-create-env.sh` script (make sure to properly set the env vars in the script).
 
 Extra dev dependencies can be installed with
 ```
