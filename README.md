@@ -22,18 +22,6 @@ The `qbm` package can be installed with
 pip install qbm
 ```
 
-### Conda Environment
-A predefined conda environment is already configured and ready for installation.
-This can be installed by running
-```
-conda env create -f environment.yml
-```
-
-Extra dev dependencies can be installed with
-```
-conda env update --file environment-dev.yml
-```
-
 ## Usage
 
 ### Basic Configuration
