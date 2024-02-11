@@ -30,9 +30,12 @@ dev = [
     "black",
     "flake8",
     "isort",
+    "m2r2",
     "pytest",
     "pytest-cov",
     "python-language-server",
+    "Sphinx",
+    "sphinx-rtd-theme",
     "twine",
 ]
 ipython = [
