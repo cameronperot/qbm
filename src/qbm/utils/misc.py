@@ -8,7 +8,7 @@ import pandas as pd
 from numpy.random import MT19937, RandomState, SeedSequence
 
 
-def df_ensemble_stats(dfs):
+def compute_df_ensemble_stats(dfs):
     """
     Computes the means, medians, and standard deviations column/row-wise over the input
     list of dataframes.
@@ -25,7 +25,7 @@ def df_ensemble_stats(dfs):
     return {"means": means, "medians": medians, "stds": stds}
 
 
-def df_stats(df):
+def compute_df_stats(df):
     """
     Compute the min, max, mean, median, and standard deviation of the columns in the
     dataframe.
@@ -97,7 +97,7 @@ def get_rng(seed=None):
     return RandomState(MT19937(SeedSequence(seed)))
 
 
-def kl_divergence(
+def compute_kl_divergence(
     p_data, q_data, n_bins=32, epsilon_smooth=None, relative_smooth=False
 ):
     """
@@ -163,7 +163,7 @@ def load_artifact(file_path):
 
 
 @np.vectorize
-def lr_exp_decay(epoch, decay_epoch, period, base=2):
+def compute_lr_exp_decay(epoch, decay_epoch, period, base=2):
     """
     Exponential decay function for use in learning rate scheduling. It is relative, so
     one must multiply the base learning rate by the output of this function.
@@ -202,7 +202,7 @@ def save_artifact(artifact, file_path):
             pickle.dump(artifact, f)
 
 
-def lower_tail_concentration(z, U, V):
+def compute_lower_tail_concentration(z, U, V):
     """
     Lower tail concentration function defined as:
     L(z) = P(U <= z | V <= z) = P(U <= z, V <= z) / P(U <= z)
@@ -222,10 +222,12 @@ def lower_tail_concentration(z, U, V):
     return np.sum(np.logical_and(z >= U, z >= V)) / np.sum(z >= U)
 
 
-lower_tail_concentration = np.vectorize(lower_tail_concentration, excluded=[1, 2])
+compute_lower_tail_concentration = np.vectorize(
+    compute_lower_tail_concentration, excluded=[1, 2]
+)
 
 
-def upper_tail_concentration(z, U, V):
+def compute_upper_tail_concentration(z, U, V):
     """
     Upper tail concentration function defined as:
     R(z) = P(U > z | V > z) = P(U > z, V > z) / P(U > z)
@@ -245,4 +247,6 @@ def upper_tail_concentration(z, U, V):
     return np.sum(np.logical_and(z < U, z < V)) / np.sum(z < U)
 
 
-upper_tail_concentration = np.vectorize(upper_tail_concentration, excluded=[1, 2])
+compute_upper_tail_concentration = np.vectorize(
+    compute_upper_tail_concentration, excluded=[1, 2]
+)
