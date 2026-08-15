@@ -79,7 +79,7 @@ include = ["src", "tests"]
 exclude = ["**/__pycache__", ".venv"]
 venvPath = "."
 venv = ".venv"
-pythonVersion = "3.12"
+pythonVersion = "3.13"
 typeCheckingMode = "standard"  # options: "off", "basic", "standard", "strict"
 
 [dependency-groups]
