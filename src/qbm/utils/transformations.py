@@ -1,4 +1,9 @@
+from __future__ import annotations
+
+from collections.abc import Hashable, Sequence
+
 import numpy as np
+import pandas as pd
 
 
 class PowerTransformer:
@@ -7,7 +12,13 @@ class PowerTransformer:
     power (<1) to scale them closer to the mean.
     """
 
-    def __init__(self, df, threshold=1, power=0.5, columns=None):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        threshold: float = 1.0,
+        power: float = 0.5,
+        columns: Sequence[Hashable] | None = None,
+    ) -> None:
         """
         :param df: Dataframe of data to scale.
         :param threshold: Number of standard deviations above the mean at which to begin
@@ -33,7 +44,7 @@ class PowerTransformer:
             self.μ[column] = df[column].mean()
             self.σ[column] = df[column].std()
 
-    def transform(self, df, inplace=False):
+    def transform(self, df: pd.DataFrame, inplace: bool = False) -> pd.DataFrame:
         """
         Transforms the data to the scaled space.
 
@@ -41,7 +52,7 @@ class PowerTransformer:
         :param inplace: If True then it operates on the same dataframe, if False then
             it creates a copy.
 
-        :returns: Dataframe of transformed data (if inplace == False).
+        :returns: Dataframe of transformed data.
         """
         if not inplace:
             df = df.copy()
@@ -54,10 +65,11 @@ class PowerTransformer:
             x[mask] = ((np.abs(x) ** self.power + self.offset) * np.sign(x))[mask]
             df[column] = x * σ + μ
 
-        if not inplace:
-            return df
+        return df
 
-    def inverse_transform(self, df, inplace=False):
+    def inverse_transform(
+        self, df: pd.DataFrame, inplace: bool = False
+    ) -> pd.DataFrame:
         """
         Transforms the data back from the scaled space.
 
@@ -65,7 +77,7 @@ class PowerTransformer:
         :param inplace: If True then it operates on the same dataframe, if False then
             it creates a copy.
 
-        :returns: Dataframe of untransformed data (if inplace == False).
+        :returns: Dataframe of untransformed data.
         """
         if not inplace:
             df = df.copy()
@@ -78,5 +90,4 @@ class PowerTransformer:
             x[mask] = ((np.abs(x) - self.offset) ** (1 / self.power) * np.sign(x))[mask]
             df[column] = x * σ + μ
 
-        if not inplace:
-            return df
+        return df

@@ -1,14 +1,20 @@
+from __future__ import annotations
+
 import json
 import os
 import pickle
+from collections.abc import Mapping, Sequence
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
 from numpy.random import MT19937, RandomState, SeedSequence
 
 
-def compute_df_ensemble_stats(dfs):
+def compute_df_ensemble_stats(
+    dfs: Sequence[pd.DataFrame],
+) -> dict[str, pd.DataFrame]:
     """
     Computes the means, medians, and standard deviations column/row-wise over the input
     list of dataframes.
@@ -21,11 +27,14 @@ def compute_df_ensemble_stats(dfs):
     means = df.groupby(df.index).mean()
     medians = df.groupby(df.index).median()
     stds = df.groupby(df.index).std()
+    assert isinstance(means, pd.DataFrame)
+    assert isinstance(medians, pd.DataFrame)
+    assert isinstance(stds, pd.DataFrame)
 
     return {"means": means, "medians": medians, "stds": stds}
 
 
-def compute_df_stats(df):
+def compute_df_stats(df: pd.DataFrame) -> pd.DataFrame:
     """
     Compute the min, max, mean, median, and standard deviation of the columns in the
     dataframe.
@@ -46,7 +55,11 @@ def compute_df_stats(df):
     )
 
 
-def filter_df_on_values(df, column_values, drop_filter_columns=True):
+def filter_df_on_values(
+    df: pd.DataFrame,
+    column_values: Mapping[Any, Any],
+    drop_filter_columns: bool = True,
+) -> pd.DataFrame:
     """
     Return a copy of the dataframe filtered conditionally on provided
     column values.
@@ -64,12 +77,12 @@ def filter_df_on_values(df, column_values, drop_filter_columns=True):
         df = df.loc[df[column] == value]
 
     if drop_filter_columns:
-        df.drop(column_values.keys(), axis=1, inplace=True)
+        df.drop(column_values.keys(), axis=1, inplace=True)  # pyright: ignore[reportArgumentType, reportCallIssue]
 
     return df
 
 
-def get_project_dir():
+def get_project_dir() -> Path:
     """
     Gets the project directory path from the environment and checks if it is valid.
 
@@ -86,7 +99,7 @@ def get_project_dir():
         raise Exception(f"Path '{dir_path}' does not exist")
 
 
-def get_rng(seed=None):
+def get_rng(seed: int | None = None) -> RandomState:
     """
     Creates a random number generator with the specified seed value.
 
@@ -98,8 +111,12 @@ def get_rng(seed=None):
 
 
 def compute_kl_divergence(
-    p_data, q_data, n_bins=32, epsilon_smooth=None, relative_smooth=False
-):
+    p_data: np.ndarray,
+    q_data: np.ndarray,
+    n_bins: int = 32,
+    epsilon_smooth: float | None = None,
+    relative_smooth: bool = False,
+) -> float:
     """
     Computes the D_KL(p_data || p_samples).
 
@@ -140,7 +157,7 @@ def compute_kl_divergence(
     return (p * np.log(p / q)).sum()
 
 
-def load_artifact(file_path):
+def load_artifact(file_path: str | Path) -> Any:
     """
     Loads a pickle or json artifact (depending on the file extension).
 
@@ -163,7 +180,12 @@ def load_artifact(file_path):
 
 
 @np.vectorize
-def compute_lr_exp_decay(epoch, decay_epoch, period, base=2):
+def compute_lr_exp_decay(
+    epoch: float,
+    decay_epoch: float,
+    period: float,
+    base: float = 2.0,
+) -> float:
     """
     Exponential decay function for use in learning rate scheduling. It is relative, so
     one must multiply the base learning rate by the output of this function.
@@ -178,7 +200,7 @@ def compute_lr_exp_decay(epoch, decay_epoch, period, base=2):
     return base ** (min((decay_epoch - epoch), 0) / period)
 
 
-def save_artifact(artifact, file_path):
+def save_artifact(artifact: Any, file_path: str | Path) -> None:
     """
     Saves a pickle or json artifact (depending on the file extension).
 
@@ -202,7 +224,7 @@ def save_artifact(artifact, file_path):
             pickle.dump(artifact, f)
 
 
-def compute_lower_tail_concentration(z, U, V):
+def compute_lower_tail_concentration(z: float, U: np.ndarray, V: np.ndarray) -> float:
     """
     Lower tail concentration function defined as:
     L(z) = P(U <= z | V <= z) = P(U <= z, V <= z) / P(U <= z)
@@ -227,7 +249,7 @@ compute_lower_tail_concentration = np.vectorize(
 )
 
 
-def compute_upper_tail_concentration(z, U, V):
+def compute_upper_tail_concentration(z: float, U: np.ndarray, V: np.ndarray) -> float:
     """
     Upper tail concentration function defined as:
     R(z) = P(U > z | V > z) = P(U > z, V > z) / P(U > z)

@@ -1,6 +1,7 @@
 import json
 import pickle
 from pathlib import Path
+from typing import Any
 from unittest.mock import mock_open, patch
 
 import numpy as np
@@ -23,7 +24,7 @@ from qbm.utils import (
 
 
 @pytest.fixture
-def df():
+def df() -> pd.DataFrame:
     n_rows = 100
     return pd.DataFrame(
         {
@@ -39,8 +40,8 @@ def df():
     )
 
 
-def test_compute_df_ensemble_stats(monkeypatch):
-    df = pd.DataFrame.from_dict(np.arange(6).reshape((3, 2))).astype(np.float64)
+def test_compute_df_ensemble_stats(monkeypatch: Any) -> None:
+    df = pd.DataFrame(np.arange(6).reshape((3, 2))).astype(np.float64)
 
     ensemble_stats = compute_df_ensemble_stats([df, df])
 
@@ -49,7 +50,7 @@ def test_compute_df_ensemble_stats(monkeypatch):
     assert ensemble_stats["stds"].equals(pd.DataFrame(np.zeros((3, 2))))
 
 
-def test_compute_df_stats(monkeypatch):
+def test_compute_df_stats(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.pd.DataFrame.min", lambda self: 1)
     monkeypatch.setattr("qbm.utils.misc.pd.DataFrame.max", lambda self: 2)
     monkeypatch.setattr("qbm.utils.misc.pd.DataFrame.mean", lambda self: 3)
@@ -68,7 +69,7 @@ def test_compute_df_stats(monkeypatch):
 
 @patch("qbm.utils.misc.np.logical_and")
 @patch("qbm.utils.misc.np.sum")
-def test_compute_lower_tail_concentration(mock_sum, mock_logical_and):
+def test_compute_lower_tail_concentration(mock_sum: Any, mock_logical_and: Any) -> None:
     mock_sum.return_value = 123
     mock_logical_and.return_value = "test_logical_and"
 
@@ -87,7 +88,7 @@ def test_compute_lower_tail_concentration(mock_sum, mock_logical_and):
 
 @patch("qbm.utils.misc.np.logical_and")
 @patch("qbm.utils.misc.np.sum")
-def test_compute_upper_tail_concentration(mock_sum, mock_logical_and):
+def test_compute_upper_tail_concentration(mock_sum: Any, mock_logical_and: Any) -> None:
     mock_sum.return_value = 123
     mock_logical_and.return_value = "test_logical_and"
 
@@ -104,7 +105,7 @@ def test_compute_upper_tail_concentration(mock_sum, mock_logical_and):
     assert utc == 1
 
 
-def test_filter_df_on_values_drop_filter_columns_False(df):
+def test_filter_df_on_values_drop_filter_columns_False(df: pd.DataFrame) -> None:
     column_values = {"c": 0, "d": 1}
 
     df_filtered = filter_df_on_values(df, column_values, drop_filter_columns=False)
@@ -116,7 +117,7 @@ def test_filter_df_on_values_drop_filter_columns_False(df):
     assert df_filtered.shape[0] == round(df.shape[0] * (1 / 2 - 1 / 3))
 
 
-def test_filter_df_on_values_drop_filter_columns_True(df):
+def test_filter_df_on_values_drop_filter_columns_True(df: pd.DataFrame) -> None:
     column_values = {"c": 0, "d": 1}
 
     df_filtered = filter_df_on_values(df, column_values, drop_filter_columns=True)
@@ -126,14 +127,14 @@ def test_filter_df_on_values_drop_filter_columns_True(df):
     assert df_filtered.shape[0] == round(df.shape[0] * (1 / 2 - 1 / 3))
 
 
-def test_get_project_dir_env_not_set(monkeypatch):
+def test_get_project_dir_env_not_set(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.os.getenv", lambda x: None)
 
     with pytest.raises(Exception, match="QBM_PROJECT_DIR env var not set"):
         get_project_dir()
 
 
-def test_get_project_dir_path_does_not_exist(monkeypatch):
+def test_get_project_dir_path_does_not_exist(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.os.getenv", lambda x: "/test/path")
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: False)
 
@@ -141,7 +142,7 @@ def test_get_project_dir_path_does_not_exist(monkeypatch):
         get_project_dir()
 
 
-def test_get_project_dir_success(monkeypatch):
+def test_get_project_dir_success(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.os.getenv", lambda x: "/test/path")
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
@@ -152,7 +153,9 @@ def test_get_project_dir_success(monkeypatch):
 @patch("qbm.utils.misc.SeedSequence")
 @patch("qbm.utils.misc.MT19937")
 @patch("qbm.utils.misc.RandomState")
-def test_get_rng(mock_RandomState, mock_MT19937, mock_SeedSequence):
+def test_get_rng(
+    mock_RandomState: Any, mock_MT19937: Any, mock_SeedSequence: Any
+) -> None:
     mock_MT19937.return_value = "test_MT19937"
     mock_SeedSequence.return_value = "test_SeedSequence"
     mock_RandomState.return_value = "test_RandomState"
@@ -166,7 +169,7 @@ def test_get_rng(mock_RandomState, mock_MT19937, mock_SeedSequence):
     assert rng == "test_RandomState"
 
 
-def test_compute_kl_divergence():
+def test_compute_kl_divergence() -> None:
     n_bins = 32
     p_data = np.linspace(-10, 10, 1000)
     q_data = np.linspace(-1, 1, 1000)
@@ -183,21 +186,21 @@ def test_compute_kl_divergence():
     assert compute_kl_divergence(p_data, q_data) == np.sum(p * np.log(p / q))
 
 
-def test_compute_kl_divergence_zero():
+def test_compute_kl_divergence_zero() -> None:
     p_data = np.linspace(-10, 10, 1000)
     q_data = np.linspace(-10, 10, 1000)
 
     assert compute_kl_divergence(p_data, q_data) == 0
 
 
-def test_compute_kl_divergence_nonzero():
+def test_compute_kl_divergence_nonzero() -> None:
     p_data = np.linspace(-10, 10, 1000)
     q_data = np.linspace(-1, 1, 1000)
 
     assert compute_kl_divergence(p_data, q_data) != 0
 
 
-def test_compute_kl_divergence_relative_smooth():
+def test_compute_kl_divergence_relative_smooth() -> None:
     n_bins = 32
     epsilon_smooth = 1e-3
     p_data = np.linspace(-10, 10, 1000)
@@ -223,7 +226,7 @@ def test_compute_kl_divergence_relative_smooth():
     ) == np.sum(p * np.log(p / q))
 
 
-def test_compute_kl_divergence_smooth():
+def test_compute_kl_divergence_smooth() -> None:
     n_bins = 32
     epsilon_smooth = 1e-3
     p_data = np.linspace(-10, 10, 1000)
@@ -248,7 +251,7 @@ def test_compute_kl_divergence_smooth():
     assert result == np.sum(p * np.log(p / q))
 
 
-def test_load_artifact_invalid_file_path(monkeypatch):
+def test_load_artifact_invalid_file_path(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: False)
 
     file_path = Path("/test/path/file")
@@ -257,7 +260,7 @@ def test_load_artifact_invalid_file_path(monkeypatch):
         load_artifact(file_path)
 
 
-def test_load_artifact_invalid_file_extension(monkeypatch):
+def test_load_artifact_invalid_file_extension(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = Path("/test/path/file")
@@ -266,7 +269,7 @@ def test_load_artifact_invalid_file_extension(monkeypatch):
         load_artifact(file_path)
 
 
-def test_load_artifact_json_success(monkeypatch):
+def test_load_artifact_json_success(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = Path("/test/path/file.json")
@@ -280,7 +283,7 @@ def test_load_artifact_json_success(monkeypatch):
         mock_file.assert_called_with(file_path)
 
 
-def test_load_artifact_pickle_success(monkeypatch):
+def test_load_artifact_pickle_success(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = Path("/test/path/file.pkl")
@@ -294,7 +297,7 @@ def test_load_artifact_pickle_success(monkeypatch):
         mock_file.assert_called_with(file_path, "rb")
 
 
-def test_load_artifact_json_success_str(monkeypatch):
+def test_load_artifact_json_success_str(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = "/test/path/file.json"
@@ -308,7 +311,7 @@ def test_load_artifact_json_success_str(monkeypatch):
         mock_file.assert_called_with(Path(file_path))
 
 
-def test_load_artifact_pickle_success_str(monkeypatch):
+def test_load_artifact_pickle_success_str(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = "/test/path/file.pkl"
@@ -325,7 +328,7 @@ def test_load_artifact_pickle_success_str(monkeypatch):
 @pytest.mark.parametrize(
     "epoch, decay_epoch, period", [(0, 5, 10), (5, 5, 10), (6, 5, 10)]
 )
-def test_compute_lr_exp_decay(epoch, decay_epoch, period):
+def test_compute_lr_exp_decay(epoch: int, decay_epoch: int, period: int) -> None:
     lr_factor = compute_lr_exp_decay(epoch, decay_epoch, period)
 
     if epoch <= decay_epoch:
@@ -335,7 +338,7 @@ def test_compute_lr_exp_decay(epoch, decay_epoch, period):
 
 
 @patch("qbm.utils.misc.Path.mkdir")
-def test_save_artifact_parent_does_not_exist(mock_mkdir, monkeypatch):
+def test_save_artifact_parent_does_not_exist(mock_mkdir: Any, monkeypatch: Any) -> None:
     mock_mkdir.return_value = None
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: False)
 
@@ -348,7 +351,7 @@ def test_save_artifact_parent_does_not_exist(mock_mkdir, monkeypatch):
         mock_mkdir.assert_called_with(parents=True)
 
 
-def test_save_artifact_invalid_suffix(monkeypatch):
+def test_save_artifact_invalid_suffix(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = Path("/test/path/file.invalid")
@@ -359,7 +362,7 @@ def test_save_artifact_invalid_suffix(monkeypatch):
 
 
 @patch("qbm.utils.misc.json.dump")
-def test_save_artifact_json_success(mock_dump, monkeypatch):
+def test_save_artifact_json_success(mock_dump: Any, monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = Path("/test/path/file.json")
@@ -373,7 +376,7 @@ def test_save_artifact_json_success(mock_dump, monkeypatch):
 
 
 @patch("qbm.utils.misc.pickle.dump")
-def test_save_artifact_pickle_success(mock_dump, monkeypatch):
+def test_save_artifact_pickle_success(mock_dump: Any, monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = Path("/test/path/file.pkl")
@@ -387,7 +390,7 @@ def test_save_artifact_pickle_success(mock_dump, monkeypatch):
 
 
 @patch("qbm.utils.misc.json.dump")
-def test_save_artifact_json_success_str(mock_dump, monkeypatch):
+def test_save_artifact_json_success_str(mock_dump: Any, monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = "/test/path/file.json"
@@ -401,7 +404,9 @@ def test_save_artifact_json_success_str(mock_dump, monkeypatch):
 
 
 @patch("qbm.utils.misc.pickle.dump")
-def test_save_artifact_pickle_success_str_path(mock_dump, monkeypatch):
+def test_save_artifact_pickle_success_str_path(
+    mock_dump: Any, monkeypatch: Any
+) -> None:
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: True)
 
     file_path = "/test/path/file.pkl"

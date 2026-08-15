@@ -1,13 +1,34 @@
-from collections.abc import Sequence
+from __future__ import annotations
+
+from collections.abc import Callable, Mapping, Sequence
 from datetime import timedelta
+from pathlib import Path
 from time import time
+from typing import Any, Protocol, TypedDict
 
 import numpy as np
+from dimod import SampleSet
 from dwave.system import DWaveSampler, FixedEmbeddingComposite
 
 from qbm.models import QBMBase
 from qbm.simulation import compute_H, compute_rho, get_pauli_kron
 from qbm.utils import Discretizer, load_artifact, save_artifact
+
+
+class AnnealerSampler(Protocol):
+    def sample_ising(self, h: Any, J: Any, **kwargs: Any) -> SampleSet: ...
+
+
+class SimulationSamples(TypedDict):
+    E: np.ndarray
+    p: np.ndarray
+    states: np.ndarray
+    state_vectors: np.ndarray
+
+
+AnnealerParams = dict[str, Any]
+SampleOutput = SimulationSamples | SampleSet
+Callback = Callable[["BQRBM", np.ndarray], Mapping[str, Any]]
 
 
 class BQRBM(QBMBase):
@@ -17,16 +38,16 @@ class BQRBM(QBMBase):
 
     def __init__(
         self,
-        V_train,
-        n_hidden,
-        A_freeze,
-        B_freeze,
-        beta_initial=1.0,
+        V_train: np.ndarray,
+        n_hidden: int,
+        A_freeze: float,
+        B_freeze: float,
+        beta_initial: float = 1.0,
         beta_range: Sequence[float | int] = [0.1, 10],
-        annealer_params=None,
-        simulation_params=None,
-        seed=0,
-    ):
+        annealer_params: AnnealerParams | None = None,
+        simulation_params: Mapping[str, Any] | None = None,
+        seed: int | None = 0,
+    ) -> None:
         """
         Note: one of either annealer_params or simulation_params must not be None.
         Whichever
@@ -61,6 +82,8 @@ class BQRBM(QBMBase):
         as
             well as the exact sampler.
         """
+        self.qpu: DWaveSampler | None = None
+        self.sampler: AnnealerSampler | None = None
         # convert from binary to ±1 if necessary
         if set(np.unique(V_train)) == set([0, 1]):
             V_train = self._binary_to_eigen(V_train)
@@ -69,8 +92,8 @@ class BQRBM(QBMBase):
         self.A_freeze = A_freeze
         self.B_freeze = B_freeze
         self.beta = beta_initial
-        self.beta_range = beta_range
-        self.beta_history = [beta_initial]
+        self.beta_range: Sequence[float | int] = beta_range
+        self.beta_history: list[float] = [self.beta]
         super().__init__(V_train=V_train, n_hidden=n_hidden, seed=seed)
 
         # check if requirements met to use annealer or simulation
@@ -112,7 +135,13 @@ class BQRBM(QBMBase):
                 self.simulation_params.get("J_range", [-np.inf, np.inf])
             )
 
-    def sample(self, n_samples, answer_mode="raw", use_gauge=True, binary=False):
+    def sample(
+        self,
+        n_samples: int,
+        answer_mode: str = "raw",
+        use_gauge: bool = True,
+        binary: bool = False,
+    ) -> SampleOutput:
         """
         Generate samples using the model, either exact or from the annealer.
 
@@ -136,13 +165,13 @@ class BQRBM(QBMBase):
 
     def train(
         self,
-        n_epochs=100,
-        learning_rate=1e-1,
-        learning_rate_beta=1e-1,
-        mini_batch_size=10,
-        n_samples=10_000,
-        callback=None,
-    ):
+        n_epochs: int = 100,
+        learning_rate: float | Sequence[float] = 1e-1,
+        learning_rate_beta: float | Sequence[float] = 1e-1,
+        mini_batch_size: int = 10,
+        n_samples: int = 10_000,
+        callback: Callback | None = None,
+    ) -> None:
         """
         Fits the model to the training data.
 
@@ -167,22 +196,29 @@ class BQRBM(QBMBase):
             the end of each epoch.
         """
         if isinstance(learning_rate, float):
-            learning_rate = [learning_rate] * n_epochs
-        assert len(learning_rate) == n_epochs
+            learning_rates: Sequence[float] = [learning_rate] * n_epochs
+        else:
+            assert isinstance(learning_rate, Sequence)
+            learning_rates = learning_rate
+        assert len(learning_rates) == n_epochs
 
         if isinstance(learning_rate_beta, float):
-            learning_rate_beta = [learning_rate_beta] * n_epochs
-        assert len(learning_rate_beta) == n_epochs
+            beta_learning_rates: Sequence[float] = [learning_rate_beta] * n_epochs
+        else:
+            assert isinstance(learning_rate_beta, Sequence)
+            beta_learning_rates = learning_rate_beta
+        assert len(beta_learning_rates) == n_epochs
 
         if not hasattr(self, "callback_history"):
-            self.callback_history = []
+            self.callback_history: list[Mapping[str, Any]] = []
+        callback_output: Mapping[str, Any] = {}
 
         for epoch in range(1, n_epochs + 1):
             start_time = time()
 
             # set the effective learning rates
-            self.learning_rate = learning_rate[epoch - 1]
-            self.learning_rate_beta = learning_rate_beta[epoch - 1]
+            self.learning_rate: float = learning_rates[epoch - 1]
+            self.learning_rate_beta: float = beta_learning_rates[epoch - 1]
 
             # compute and apply gradient updates for each mini batch
             for mini_batch_indices in self._random_mini_batch_indices(mini_batch_size):
@@ -207,14 +243,14 @@ class BQRBM(QBMBase):
             print(
                 f"[{type(self).__name__}] epoch {epoch}:",
                 f"β = {self.beta:.3f},",
-                f"learning rate = {learning_rate[epoch - 1]:.2e},",
-                f"β learning rate = {learning_rate_beta[epoch - 1]:.2e},",
+                f"learning rate = {learning_rates[epoch - 1]:.2e},",
+                f"β learning rate = {beta_learning_rates[epoch - 1]:.2e},",
                 f"epoch duration = {timedelta(seconds=end_time - start_time)}",
             )
             if callback is not None and "print" in callback_output:
                 print(callback_output["print"])
 
-    def save(self, file_path, reinitialize_annealer=True):
+    def save(self, file_path: str | Path, reinitialize_annealer: bool = True) -> None:
         """
         Saves the BQRBM model at file_path. Necessary because of pickling issues with
         the
@@ -237,7 +273,7 @@ class BQRBM(QBMBase):
             self._initialize_annealer()
 
     @staticmethod
-    def load(file_path, initialize_annealer=True):
+    def load(file_path: str | Path, initialize_annealer: bool = True) -> BQRBM:
         """
         Loads the BQRBM model at file_path. Necessary because of pickling issues with
         the
@@ -258,14 +294,14 @@ class BQRBM(QBMBase):
         return model
 
     @property
-    def h(self):
+    def h(self) -> np.ndarray:
         """
         Ising h values. Correspond to b_i = -β * B_freeze * h_i
         """
         return -self.b / (self.beta * self.B_freeze)
 
     @property
-    def J(self):
+    def J(self) -> np.ndarray:
         """
         Ising J values. Correspond to w_ij = -β * B_freeze * J_ij
         """
@@ -273,7 +309,7 @@ class BQRBM(QBMBase):
         J[: self.n_visible, self.n_visible :] = -self.W / (self.beta * self.B_freeze)
         return J
 
-    def _check_h_and_H_ranges(self):
+    def _check_h_and_H_ranges(self) -> None:
         """
         Raises and exception if h and J values do not fall within h_range and J_range.
         """
@@ -287,7 +323,7 @@ class BQRBM(QBMBase):
         if not h_satisfied or not J_satisfied:
             raise Exception("Learned h and J values outside of allowed range")
 
-    def _compute_positive_grads(self, V_pos):
+    def _compute_positive_grads(self, V_pos: np.ndarray) -> None:
         """
         Computes the gradients for the positive phase, i.e., the expectation values
         w.r.t.
@@ -303,7 +339,7 @@ class BQRBM(QBMBase):
         self.grads["b_pos"] = np.concatenate((V_pos.mean(axis=0), H_pos.mean(axis=0)))
         self.grads["W_pos"] = V_pos.T @ H_pos / V_pos.shape[0]
 
-    def _compute_negative_grads(self, n_samples):
+    def _compute_negative_grads(self, n_samples: int) -> None:
         """
         Computes the gradients for the negative phase, i.e., the expectation values
         w.r.t.
@@ -322,7 +358,7 @@ class BQRBM(QBMBase):
         self.grads["b_neg"] = np.concatenate((V_neg.mean(axis=0), H_neg.mean(axis=0)))
         self.grads["W_neg"] = V_neg.T @ H_neg / V_neg.shape[0]
 
-    def _get_state_vectors(self, samples):
+    def _get_state_vectors(self, samples: SampleOutput) -> np.ndarray:
         """
         Get the state vectors from the samples (depending on exact or annealer
         generated).
@@ -331,12 +367,11 @@ class BQRBM(QBMBase):
 
         :returns: Array of state vectors, shape (n_samples, n_qubits).
         """
-        if hasattr(self, "simulation_params"):
+        if isinstance(samples, dict):
             return samples["state_vectors"]
-        else:
-            return samples.record.sample
+        return samples.record.sample
 
-    def _initialize_annealer(self):
+    def _initialize_annealer(self) -> None:
         """
         Initializes the D-Wave sampler using the fixed embedding provided to the object
         instantiation.
@@ -348,7 +383,7 @@ class BQRBM(QBMBase):
         self.h_range = np.array(self.qpu.properties["h_range"])
         self.J_range = np.array(self.qpu.properties["j_range"])
 
-    def _initialize_weights_and_biases(self, mu=0, sigma=0.1):
+    def _initialize_weights_and_biases(self, mu: float = 0, sigma: float = 0.1) -> None:
         """
         Initializes the weights and biases.
 
@@ -358,7 +393,9 @@ class BQRBM(QBMBase):
         self.b = np.zeros(self.n_qubits)
         self.W = self.rng.normal(mu, sigma, (self.n_visible, self.n_hidden))
 
-    def _mean_classical_energy(self, V, H, VW):
+    def _mean_classical_energy(
+        self, V: np.ndarray, H: np.ndarray, VW: np.ndarray
+    ) -> float:
         """
         Computes the mean classical energy w.r.t. the weights and biases over the
         provided
@@ -377,8 +414,12 @@ class BQRBM(QBMBase):
         ) / V.shape[0]
 
     def _sample_annealer(
-        self, n_samples, answer_mode="raw", use_gauge=True, binary=False
-    ):
+        self,
+        n_samples: int,
+        answer_mode: str = "raw",
+        use_gauge: bool = True,
+        binary: bool = False,
+    ) -> SampleSet:
         """
         Obtain a sample set using the annealer.
 
@@ -398,8 +439,10 @@ class BQRBM(QBMBase):
         J = self.J
 
         # apply a random gauge
+        gauge: np.ndarray | None = None
         if use_gauge:
             gauge = self.rng.choice([-1, 1], self.n_qubits)
+            assert gauge is not None
             h *= gauge
             J *= np.outer(gauge, gauge)
 
@@ -410,7 +453,7 @@ class BQRBM(QBMBase):
             chain_strength = min(chain_strength, self.J_range.max())
 
         # get samples from the annealer
-        samples = self.sampler.sample_ising(
+        samples = self.sampler.sample_ising(  # pyright: ignore[reportOptionalMemberAccess]
             h,
             J,
             num_reads=n_samples,
@@ -421,7 +464,7 @@ class BQRBM(QBMBase):
         )
 
         # undo the gauge
-        if use_gauge:
+        if gauge is not None:
             samples.record.sample *= gauge
 
         # convert to binary if specified
@@ -430,7 +473,9 @@ class BQRBM(QBMBase):
 
         return samples
 
-    def _sample_simulation(self, n_samples, binary=False):
+    def _sample_simulation(
+        self, n_samples: int, binary: bool = False
+    ) -> SimulationSamples:
         """
         Sample using the exact computed probabilities.
 
@@ -458,20 +503,19 @@ class BQRBM(QBMBase):
         )
 
         # sample using the probabilities on the diagonal of rho
-        samples = {}
-        samples["E"] = np.diag(H).copy()
-        samples["p"] = np.diag(rho).copy()
-        samples["states"] = self.rng.choice(
-            range(2**self.n_qubits), size=n_samples, p=samples["p"]
+        probabilities = np.diag(rho).copy()
+        states = self.rng.choice(
+            range(2**self.n_qubits), size=n_samples, p=probabilities
         )
-        samples["state_vectors"] = self._binary_to_eigen(
-            np.vstack(
-                [
-                    Discretizer.int_to_bit_vector(x, self.n_qubits)
-                    for x in samples["states"]
-                ]
-            )
+        state_vectors = self._binary_to_eigen(
+            np.vstack([Discretizer.int_to_bit_vector(x, self.n_qubits) for x in states])
         )
+        samples: SimulationSamples = {
+            "E": np.diag(H).copy(),
+            "p": probabilities,
+            "states": states,
+            "state_vectors": state_vectors,
+        }
 
         # convert to binary if specified
         if binary:
@@ -479,7 +523,7 @@ class BQRBM(QBMBase):
 
         return samples
 
-    def _update_beta(self, samples):
+    def _update_beta(self, samples: SampleOutput) -> None:
         """
         Updates the effective β = 1 / kT estimator. Used for scaling the coefficients
         sent
@@ -506,6 +550,8 @@ class BQRBM(QBMBase):
 
         # update the params
         self.beta = np.clip(
-            self.beta + self.learning_rate_beta * (E_train - E_model), *self.beta_range
+            self.beta + self.learning_rate_beta * (E_train - E_model),
+            self.beta_range[0],
+            self.beta_range[1],
         )
         self.beta_history.append(self.beta)
