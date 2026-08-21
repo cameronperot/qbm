@@ -11,7 +11,8 @@ def get_pauli_kron(n_visible, n_hidden):
     """
     Computes the necessary Pauli Kronecker product (sparse) matrices for a n_visible +
     n_hidden qubit problem. Used as an argument to compute_H, e.g. one would instantiate
-    pauli_kron as pauli_kron = get_pauli_kron(n_visible, n_hidden), then pass to compute_H
+    pauli_kron as pauli_kron = get_pauli_kron(n_visible, n_hidden), then pass to
+    compute_H
     when computing the Hamiltonian.
 
     :param n_visible: Number of visible units.
@@ -27,7 +28,9 @@ def get_pauli_kron(n_visible, n_hidden):
         pauli_kron["z_diag", i] = sparse_kron(i, n_qubits, sparse_Z).diagonal()
     for i in range(n_qubits):
         for j in range(i + 1, n_qubits):
-            pauli_kron["zz_diag", i, j] = pauli_kron["z_diag", i] * pauli_kron["z_diag", j]
+            pauli_kron["zz_diag", i, j] = (
+                pauli_kron["z_diag", i] * pauli_kron["z_diag", j]
+            )
 
     return pauli_kron
 

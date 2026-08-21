@@ -13,14 +13,16 @@ learning_rate = 1e-3
 
 
 def mock_initialize_annealer(model):
-    setattr(model, "qpu", None)
-    setattr(model, "h_range", np.array([-4, 4]))
-    setattr(model, "J_range", np.array([-1, 1]))
+    model.qpu = None
+    model.h_range = np.array([-4, 4])
+    model.J_range = np.array([-1, 1])
 
 
 @pytest.fixture
 def model_simulation(monkeypatch):
-    monkeypatch.setattr("qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer)
+    monkeypatch.setattr(
+        "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
+    )
 
     rng = get_rng(0)
     df = pd.DataFrame.from_dict({"x": rng.normal(0, 1, 1000)})
@@ -43,7 +45,9 @@ def model_simulation(monkeypatch):
 
 @pytest.fixture
 def model_annealer(monkeypatch):
-    monkeypatch.setattr("qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer)
+    monkeypatch.setattr(
+        "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
+    )
 
     rng = get_rng(0)
     df = pd.DataFrame.from_dict({"x": rng.normal(0, 1, 1000)})
@@ -65,7 +69,9 @@ def model_annealer(monkeypatch):
 
 
 def test_init_simultor(monkeypatch):
-    monkeypatch.setattr("qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer)
+    monkeypatch.setattr(
+        "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
+    )
 
     rng = get_rng(0)
     df = pd.DataFrame.from_dict({"x": rng.normal(0, 1, 1000)})
@@ -106,7 +112,9 @@ def test_init_simultor(monkeypatch):
 
 
 def test_init_simultor_bad_params(monkeypatch):
-    monkeypatch.setattr("qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer)
+    monkeypatch.setattr(
+        "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
+    )
 
     rng = get_rng(0)
     df = pd.DataFrame.from_dict({"x": rng.normal(0, 1, 1000)})
@@ -120,8 +128,8 @@ def test_init_simultor_bad_params(monkeypatch):
     simulation_params = {}
     seed = 0
 
-    with pytest.raises(Exception):
-        model = BQRBM(
+    with pytest.raises(Exception, match="Missing key in simulation_params"):
+        BQRBM(
             V_train=V_train,
             n_hidden=n_hidden,
             A_freeze=A_freeze,
@@ -134,7 +142,9 @@ def test_init_simultor_bad_params(monkeypatch):
 
 
 def test_init_simultor_annealer_both_fail(monkeypatch):
-    monkeypatch.setattr("qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer)
+    monkeypatch.setattr(
+        "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
+    )
 
     rng = get_rng(0)
     df = pd.DataFrame.from_dict({"x": rng.normal(0, 1, 1000)})
@@ -146,8 +156,10 @@ def test_init_simultor_annealer_both_fail(monkeypatch):
     annealer_params = {"embedding": {1: [1], 2: [2]}, "schedule": [(0, 0), (20, 1)]}
     simulation_params = {"beta": 1.0}
 
-    with pytest.raises(Exception):
-        model = BQRBM(
+    with pytest.raises(
+        Exception, match="one of either annealer_params or simulation_params"
+    ):
+        BQRBM(
             V_train=V_train,
             n_hidden=n_hidden,
             A_freeze=A_freeze,
@@ -158,7 +170,9 @@ def test_init_simultor_annealer_both_fail(monkeypatch):
 
 
 def test_init_simultor_annealer_none_fail(monkeypatch):
-    monkeypatch.setattr("qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer)
+    monkeypatch.setattr(
+        "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
+    )
 
     rng = get_rng(0)
     df = pd.DataFrame.from_dict({"x": rng.normal(0, 1, 1000)})
@@ -168,8 +182,10 @@ def test_init_simultor_annealer_none_fail(monkeypatch):
     A_freeze = 0.1
     B_freeze = 1.1
 
-    with pytest.raises(Exception):
-        model = BQRBM(
+    with pytest.raises(
+        Exception, match="one of either annealer_params or simulation_params"
+    ):
+        BQRBM(
             V_train=V_train,
             n_hidden=n_hidden,
             A_freeze=A_freeze,
@@ -178,7 +194,9 @@ def test_init_simultor_annealer_none_fail(monkeypatch):
 
 
 def test_init_annealer(monkeypatch):
-    monkeypatch.setattr("qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer)
+    monkeypatch.setattr(
+        "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
+    )
 
     rng = get_rng(0)
     df = pd.DataFrame.from_dict({"x": rng.normal(0, 1, 1000)})
@@ -219,7 +237,9 @@ def test_init_annealer(monkeypatch):
 
 
 def test_init_annealer_bad_params(monkeypatch):
-    monkeypatch.setattr("qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer)
+    monkeypatch.setattr(
+        "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
+    )
 
     rng = get_rng(0)
     df = pd.DataFrame.from_dict({"x": rng.normal(0, 1, 1000)})
@@ -233,8 +253,8 @@ def test_init_annealer_bad_params(monkeypatch):
     annealer_params = {}
     seed = 0
 
-    with pytest.raises(Exception):
-        model = BQRBM(
+    with pytest.raises(Exception, match="Missing key in annealer_params"):
+        BQRBM(
             V_train=V_train,
             n_hidden=n_hidden,
             A_freeze=A_freeze,
@@ -247,8 +267,6 @@ def test_init_annealer_bad_params(monkeypatch):
 
 
 def test_sample_annealer(monkeypatch, model_annealer):
-    rng = get_rng(0)
-    state_vectors = rng.rand(n_samples, n_qubits)
     monkeypatch.setattr(
         "qbm.models.BQRBM._sample_annealer",
         lambda self, n_samples, answer_mode, use_gauge, binary: "test",
@@ -260,8 +278,6 @@ def test_sample_annealer(monkeypatch, model_annealer):
 
 
 def test_sample_simulation(monkeypatch, model_simulation):
-    rng = get_rng(0)
-    state_vectors = rng.rand(n_samples, n_qubits)
     monkeypatch.setattr(
         "qbm.models.BQRBM._sample_simulation",
         lambda self, n_samples, binary: "test",
@@ -347,10 +363,12 @@ def test__compute_negative_grads(monkeypatch, model_simulation):
 def test__update_beta(monkeypatch, model_simulation):
     rng = get_rng(0)
     state_vectors = rng.rand(n_samples, n_qubits)
-    monkeypatch.setattr("qbm.models.BQRBM.sample", lambda self, n_samples: state_vectors)
+    monkeypatch.setattr(
+        "qbm.models.BQRBM.sample", lambda self, n_samples: state_vectors
+    )
 
     beta = model_simulation.beta
-    setattr(model_simulation, "learning_rate", learning_rate)
+    model_simulation.learning_rate = learning_rate
 
     V_train = model_simulation.V_train
     VW_train = V_train @ model_simulation.W

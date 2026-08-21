@@ -34,7 +34,9 @@ def test_PowerTransformer_init_kwargs(df):
     threshold = 1.1
     columns = ["a", "b"]
 
-    transformer = PowerTransformer(df, power=power, threshold=threshold, columns=columns)
+    transformer = PowerTransformer(
+        df, power=power, threshold=threshold, columns=columns
+    )
 
     assert transformer.power == power
     assert transformer.threshold == threshold
@@ -83,7 +85,9 @@ def test_PowerTransformer_transform_subset_columns(df):
     threshold = 1
     columns = ["a", "b"]
 
-    transformer = PowerTransformer(df, power=power, threshold=threshold, columns=columns)
+    transformer = PowerTransformer(
+        df, power=power, threshold=threshold, columns=columns
+    )
     df_transformed = transformer.transform(df)
 
     for column in columns:
@@ -134,7 +138,9 @@ def test_PowerTransformer_inverse_transform_subset_columns(df):
     threshold = 1
     columns = ["a", "b"]
 
-    transformer = PowerTransformer(df, power=power, threshold=threshold, columns=columns)
+    transformer = PowerTransformer(
+        df, power=power, threshold=threshold, columns=columns
+    )
     df_transformed = transformer.transform(df)
     df_inverse_transformed = transformer.inverse_transform(df_transformed)
 
