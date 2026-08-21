@@ -8,9 +8,15 @@ test:
     - python -c "import qbm.simulation"
     - python -c "import qbm.utils"
     - python -c "import qbm.models"
-    - pytest --cov-report=term-missing --cov=qbm --cov-config=.coveragerc
+    - pytest --cov-report=term-missing --cov=qbm
     - coverage xml
   coverage: '/TOTAL.*\s+(\d+\%)/'
+typecheck:
+  stage: test
+  image: python:3.13-slim
+  script:
+    - pip install ty
+    - ty check src
 pages:
   stage: deploy
   image: python:3.9-bullseye
