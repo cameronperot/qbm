@@ -77,7 +77,7 @@ def filter_df_on_values(
         df = df.loc[df[column] == value]
 
     if drop_filter_columns:
-        df.drop(column_values.keys(), axis=1, inplace=True)  # pyright: ignore[reportArgumentType, reportCallIssue]
+        df.drop(column_values.keys(), axis=1, inplace=True)
 
     return df
 
@@ -179,13 +179,12 @@ def load_artifact(file_path: str | Path) -> Any:
             return pickle.load(f)
 
 
-@np.vectorize
 def compute_lr_exp_decay(
-    epoch: float,
+    epoch: float | np.ndarray,
     decay_epoch: float,
     period: float,
     base: float = 2.0,
-) -> float:
+) -> float | np.ndarray:
     """
     Exponential decay function for use in learning rate scheduling. It is relative, so
     one must multiply the base learning rate by the output of this function.
@@ -197,7 +196,7 @@ def compute_lr_exp_decay(
 
     :returns: The learning rate scaling factor.
     """
-    return base ** (min((decay_epoch - epoch), 0) / period)
+    return base ** (np.minimum(decay_epoch - epoch, 0) / period)
 
 
 def save_artifact(artifact: Any, file_path: str | Path) -> None:
@@ -224,7 +223,9 @@ def save_artifact(artifact: Any, file_path: str | Path) -> None:
             pickle.dump(artifact, f)
 
 
-def compute_lower_tail_concentration(z: float, U: np.ndarray, V: np.ndarray) -> float:
+def compute_lower_tail_concentration(
+    z: float | np.ndarray, U: np.ndarray, V: np.ndarray
+) -> float | np.ndarray:
     """
     Lower tail concentration function defined as:
     L(z) = P(U <= z | V <= z) = P(U <= z, V <= z) / P(U <= z)
@@ -241,15 +242,15 @@ def compute_lower_tail_concentration(z: float, U: np.ndarray, V: np.ndarray) -> 
 
     :returns: Lower tail concentration function.
     """
-    return np.sum(np.logical_and(z >= U, z >= V)) / np.sum(z >= U)
+    z_expanded = np.asarray(z)[..., np.newaxis]
+    return np.sum(np.logical_and(z_expanded >= U, z_expanded >= V), axis=-1) / np.sum(
+        z_expanded >= U, axis=-1
+    )
 
 
-compute_lower_tail_concentration = np.vectorize(
-    compute_lower_tail_concentration, excluded=[1, 2]
-)
-
-
-def compute_upper_tail_concentration(z: float, U: np.ndarray, V: np.ndarray) -> float:
+def compute_upper_tail_concentration(
+    z: float | np.ndarray, U: np.ndarray, V: np.ndarray
+) -> float | np.ndarray:
     """
     Upper tail concentration function defined as:
     R(z) = P(U > z | V > z) = P(U > z, V > z) / P(U > z)
@@ -266,9 +267,7 @@ def compute_upper_tail_concentration(z: float, U: np.ndarray, V: np.ndarray) -> 
 
     :returns: Upper tail concentration function.
     """
-    return np.sum(np.logical_and(z < U, z < V)) / np.sum(z < U)
-
-
-compute_upper_tail_concentration = np.vectorize(
-    compute_upper_tail_concentration, excluded=[1, 2]
-)
+    z_expanded = np.asarray(z)[..., np.newaxis]
+    return np.sum(np.logical_and(z_expanded < U, z_expanded < V), axis=-1) / np.sum(
+        z_expanded < U, axis=-1
+    )

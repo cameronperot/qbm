@@ -40,7 +40,7 @@ def get_pauli_kron(n_visible: int, n_hidden: int) -> PauliKron:
     return pauli_kron
 
 
-def sparse_kron(i: int, n_qubits: int, A: Any) -> Any:
+def sparse_kron(i: int, n_qubits: int, A: spmatrix) -> Any:
     """
     Compute I_{2^i} ⊗ A ⊗ I_{2^(n_qubits-i-1)}.
 

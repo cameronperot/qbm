@@ -15,6 +15,9 @@ class QBMBase(ABC):
     https://journals.aps.org/prx/abstract/10.1103/PhysRevX.8.021050
     """
 
+    b: np.ndarray
+    W: np.ndarray
+
     def __init__(self, V_train: np.ndarray, n_hidden: int, seed: int | None) -> None:
         """
         :param V_train: Training data.

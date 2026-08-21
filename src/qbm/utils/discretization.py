@@ -1,9 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from typing import NotRequired, TypedDict
 
 import numpy as np
 import pandas as pd
+
+
+class ColumnParams(TypedDict):
+    """Per-column discretization parameters."""
+
+    n_bits: int
+    x_min: NotRequired[float]
+    x_max: NotRequired[float]
 
 
 class Discretizer:
@@ -21,7 +30,7 @@ class Discretizer:
         self.columns = df.columns
         self.n_bits = n_bits
         self.epsilon = epsilon
-        self.params = {}
+        self.params: dict[str, ColumnParams] = {}
         self.split_indices = []
         self.n_bits_total = 0
 

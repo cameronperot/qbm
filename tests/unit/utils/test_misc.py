@@ -105,6 +105,21 @@ def test_compute_upper_tail_concentration(mock_sum: Any, mock_logical_and: Any) 
     assert utc == 1
 
 
+def test_compute_tail_concentration_array_z() -> None:
+    z = np.linspace(0.1, 0.9, 17)
+    U = np.linspace(0, 0.9, 100)
+    V = np.linspace(0, 1, 100)
+
+    ltc = compute_lower_tail_concentration(z, U, V)
+    utc = compute_upper_tail_concentration(z, U, V)
+
+    ltc_reference = np.array([compute_lower_tail_concentration(z_i, U, V) for z_i in z])
+    utc_reference = np.array([compute_upper_tail_concentration(z_i, U, V) for z_i in z])
+
+    assert np.allclose(ltc, ltc_reference, equal_nan=True)
+    assert np.allclose(utc, utc_reference, equal_nan=True)
+
+
 def test_filter_df_on_values_drop_filter_columns_False(df: pd.DataFrame) -> None:
     column_values = {"c": 0, "d": 1}
 

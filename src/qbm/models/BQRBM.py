@@ -26,9 +26,9 @@ class SimulationSamples(TypedDict):
     state_vectors: np.ndarray
 
 
-AnnealerParams = dict[str, Any]
-SampleOutput = SimulationSamples | SampleSet
-Callback = Callable[["BQRBM", np.ndarray], Mapping[str, Any]]
+type AnnealerParams = Mapping[str, Any]
+type SampleOutput = SimulationSamples | SampleSet
+type Callback = Callable[[BQRBM, np.ndarray], Mapping[str, Any]]
 
 
 class BQRBM(QBMBase):
@@ -166,8 +166,8 @@ class BQRBM(QBMBase):
     def train(
         self,
         n_epochs: int = 100,
-        learning_rate: float | Sequence[float] = 1e-1,
-        learning_rate_beta: float | Sequence[float] = 1e-1,
+        learning_rate: float | Sequence[float] | np.ndarray = 1e-1,
+        learning_rate_beta: float | Sequence[float] | np.ndarray = 1e-1,
         mini_batch_size: int = 10,
         n_samples: int = 10_000,
         callback: Callback | None = None,
@@ -196,17 +196,17 @@ class BQRBM(QBMBase):
             the end of each epoch.
         """
         if isinstance(learning_rate, float):
-            learning_rates: Sequence[float] = [learning_rate] * n_epochs
+            learning_rates: list[float] = [learning_rate] * n_epochs
         else:
-            assert isinstance(learning_rate, Sequence)
-            learning_rates = learning_rate
+            learning_rates = np.asarray(learning_rate, dtype=np.float64).tolist()
         assert len(learning_rates) == n_epochs
 
         if isinstance(learning_rate_beta, float):
-            beta_learning_rates: Sequence[float] = [learning_rate_beta] * n_epochs
+            beta_learning_rates: list[float] = [learning_rate_beta] * n_epochs
         else:
-            assert isinstance(learning_rate_beta, Sequence)
-            beta_learning_rates = learning_rate_beta
+            beta_learning_rates = np.asarray(
+                learning_rate_beta, dtype=np.float64
+            ).tolist()
         assert len(beta_learning_rates) == n_epochs
 
         if not hasattr(self, "callback_history"):
@@ -367,9 +367,9 @@ class BQRBM(QBMBase):
 
         :returns: Array of state vectors, shape (n_samples, n_qubits).
         """
-        if isinstance(samples, dict):
-            return samples["state_vectors"]
-        return samples.record.sample
+        if isinstance(samples, SampleSet):
+            return samples.record.sample
+        return samples["state_vectors"]
 
     def _initialize_annealer(self) -> None:
         """
@@ -453,7 +453,8 @@ class BQRBM(QBMBase):
             chain_strength = min(chain_strength, self.J_range.max())
 
         # get samples from the annealer
-        samples = self.sampler.sample_ising(  # pyright: ignore[reportOptionalMemberAccess]
+        assert self.sampler is not None
+        samples = self.sampler.sample_ising(
             h,
             J,
             num_reads=n_samples,
