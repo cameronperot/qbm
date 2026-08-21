@@ -1,0 +1,38 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - run: uv sync --locked
+      - run: uv run sphinx-apidoc -f -o docs/source src/qbm
+      - run: uv run sphinx-build -d docs/_build/doctrees docs/source docs/_build/html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_build/html
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
