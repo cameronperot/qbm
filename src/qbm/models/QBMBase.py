@@ -20,9 +20,12 @@ class QBMBase(ABC):
 
     def __init__(self, V_train: np.ndarray, n_hidden: int, seed: int | None) -> None:
         """
-        :param V_train: Training data.
-        :param n_hidden: Number of hidden units.
-        :param seed: Seed for the random number generator.
+        Initializes the model.
+
+        Args:
+            V_train: Training data.
+            n_hidden: Number of hidden units.
+            seed: Seed for the random number generator.
         """
         self.V_train = V_train
         self.n_visible = V_train.shape[1]
@@ -39,7 +42,8 @@ class QBMBase(ABC):
         Applies the gradients from the positive and negative phases using the provided
         learning rate.
 
-        :param learning_rate: Learning rate to scale the gradients with.
+        Args:
+            learning_rate: Learning rate to scale the gradients with.
         """
         self.b += learning_rate * (self.grads["b_pos"] - self.grads["b_neg"])
         self.W += learning_rate * (self.grads["W_pos"] - self.grads["W_neg"])
@@ -48,9 +52,11 @@ class QBMBase(ABC):
         """
         Convert bit values {0, 1} to corresponding spin values {+1, -1}.
 
-        :param x: Input array of values {0, 1}.
+        Args:
+            x: Input array of values {0, 1}.
 
-        :returns: Output array of values {+1, -1}.
+        Returns:
+            Output array of values {+1, -1}.
         """
         return (1 - 2 * x).astype(np.int8)
 
@@ -58,22 +64,25 @@ class QBMBase(ABC):
         """
         Convert spin values {+1, -1} to corresponding bit values {0, 1}.
 
-        :param x: Input array of values {+1, -1}.
+        Args:
+            x: Input array of values {+1, -1}.
 
-        :returns: Output array of values {0, 1}.
+        Returns:
+            Output array of values {0, 1}.
         """
         return ((1 - x) / 2).astype(np.int8)
 
     def _random_mini_batch_indices(self, mini_batch_size: int) -> list[np.ndarray]:
         """
-        Generates random, non-intersecting sets of indices for creating mini-batches of
-        the
-        training data.
+        Generates random, non-intersecting sets of indices for creating mini-batches
+        of the training data. The final mini-batch may be smaller than
+        mini_batch_size if the training set size is not divisible by it.
 
-        :param mini_batch_size: Size of the mini-batches.
+        Args:
+            mini_batch_size: Size of the mini-batches.
 
-        :returns: List of numpy arrays, each array containing the indices corresponding
-        to
+        Returns:
+            List of numpy arrays, each array containing the indices corresponding to
             a mini-batch.
         """
         return np.split(

@@ -14,16 +14,19 @@ sparse_Z = csr_matrix(([1, -1], ([0, 1], [0, 1])), dtype=np.float64)
 
 def get_pauli_kron(n_visible: int, n_hidden: int) -> PauliKron:
     """
-    Computes the necessary Pauli Kronecker product (sparse) matrices for a n_visible +
-    n_hidden qubit problem. Used as an argument to compute_H, e.g. one would instantiate
-    pauli_kron as pauli_kron = get_pauli_kron(n_visible, n_hidden), then pass to
-    compute_H
-    when computing the Hamiltonian.
+    Computes the necessary Pauli Kronecker product (sparse) matrices for a n_visible
+    + n_hidden qubit problem. Used as an argument to compute_H, e.g. one would
+    instantiate pauli_kron as pauli_kron = get_pauli_kron(n_visible, n_hidden), then
+    pass to compute_H when computing the Hamiltonian.
 
-    :param n_visible: Number of visible units.
-    :param n_hidden: Number of hidden units.
+    Args:
+        n_visible: Number of visible units.
+        n_hidden: Number of hidden units.
 
-    :returns: A dictionary of Kronecker product Pauli matrices.
+    Returns:
+        Dictionary of Kronecker product Pauli terms, with keys ("x", i) mapping to
+        sparse matrices I ⊗ σ_x^(i) ⊗ I, and keys ("z_diag", i) and ("zz_diag", i, j)
+        mapping to the diagonals of I ⊗ σ_z^(i) ⊗ I and their pairwise products.
     """
     # set Kronecker product Pauli matrices
     n_qubits = n_visible + n_hidden
@@ -44,11 +47,13 @@ def sparse_kron(i: int, n_qubits: int, A: spmatrix) -> Any:
     """
     Compute I_{2^i} ⊗ A ⊗ I_{2^(n_qubits-i-1)}.
 
-    :param i: Index of the "A" matrix.
-    :param n_qubits: Total number of qubits.
-    :param A: Matrix to tensor with identities.
+    Args:
+        i: Index of the "A" matrix.
+        n_qubits: Total number of qubits.
+        A: Matrix to tensor with identities.
 
-    :returns: I_{2^i} ⊗ A ⊗ I_{2^(n_qubits-i-1)}.
+    Returns:
+        I_{2^i} ⊗ A ⊗ I_{2^(n_qubits-i-1)}.
     """
     if i != 0 and i != n_qubits - 1:
         return kron(kron(identity(2**i), A), identity(2 ** (n_qubits - i - 1)))
@@ -69,14 +74,16 @@ def compute_H(
     """
     Computes the Hamiltonian of the annealer at relative time s.
 
-    :param h: Linear Ising terms.
-    :param J: Quadratic Ising terms.
-    :param A: Coefficient of the off-diagonal terms, e.g. A(s).
-    :param B: Coefficient of the diagonal terms, e.g. B(s).
-    :param n_qubits: Number of qubits.
-    :param pauli_kron: Kronecker product Pauli matrices dict.
+    Args:
+        h: Linear Ising terms.
+        J: Quadratic Ising terms.
+        A: Coefficient of the off-diagonal terms, e.g. A(s).
+        B: Coefficient of the diagonal terms, e.g. B(s).
+        n_qubits: Number of qubits.
+        pauli_kron: Kronecker product Pauli matrices dict.
 
-    :returns: Hamiltonian matrix H.
+    Returns:
+        Hamiltonian matrix H.
     """
     # diagonal terms
     H_diag = np.zeros(2**n_qubits)
@@ -106,11 +113,13 @@ def compute_rho(H: np.ndarray, beta: float, diagonal: bool = False) -> np.ndarra
     """
     Computes the trace normalized density matrix rho.
 
-    :param H: Hamiltonian matrix.
-    :param beta: Inverse temperature beta = 1 / (k_B * T).
-    :param diagonal: Flag to indicate whether H is a diagonal matrix or not.
+    Args:
+        H: Hamiltonian matrix.
+        beta: Inverse temperature beta = 1 / (k_B * T).
+        diagonal: Flag to indicate whether H is a diagonal matrix or not.
 
-    :return: Density matrix rho.
+    Returns:
+        Density matrix rho.
     """
     # if diagonal then compute directly, else use eigen decomposition
     if diagonal:

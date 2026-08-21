@@ -19,9 +19,11 @@ def compute_df_ensemble_stats(
     Computes the means, medians, and standard deviations column/row-wise over the input
     list of dataframes.
 
-    :param dfs: List of dataframes with identical row/column names.
+    Args:
+        dfs: List of dataframes with identical row/column names.
 
-    :returns: Dictionary of dataframes with the means, medians, and standard deviations.
+    Returns:
+        Dictionary of dataframes with the means, medians, and standard deviations.
     """
     df = pd.concat(dfs)
     means = df.groupby(df.index).mean()
@@ -39,9 +41,11 @@ def compute_df_stats(df: pd.DataFrame) -> pd.DataFrame:
     Compute the min, max, mean, median, and standard deviation of the columns in the
     dataframe.
 
-    :param df: Dataframe.
+    Args:
+        df: Dataframe.
 
-    :returns: Dataframe of the statistics.
+    Returns:
+        Dataframe of the statistics.
     """
     return pd.DataFrame.from_dict(
         {
@@ -64,13 +68,15 @@ def filter_df_on_values(
     Return a copy of the dataframe filtered conditionally on provided
     column values.
 
-    :param df: Dataframe to filter.
-    :param column_values: Dictionary where the keys are column names, and the
-        values are values on which to filter the dataframe.
-    :param drop_filter_columns: If True returns a copy of the dataframe with
-        the filtered columns dropped.
+    Args:
+        df: Dataframe to filter.
+        column_values: Dictionary where the keys are column names, and the
+            values are values on which to filter the dataframe.
+        drop_filter_columns: If True returns a copy of the dataframe with
+            the filtered columns dropped.
 
-    :returns: A dataframe filtered conditionally on the provided column values.
+    Returns:
+        A dataframe filtered conditionally on the provided column values.
     """
     df = df.copy()
     for column, value in column_values.items():
@@ -86,7 +92,11 @@ def get_project_dir() -> Path:
     """
     Gets the project directory path from the environment and checks if it is valid.
 
-    :returns: Path object of the project directory.
+    Returns:
+        Path object of the project directory.
+
+    Raises:
+        Exception: If the QBM_PROJECT_DIR env var is not set or the path does not exist.
     """
     dir_path = os.getenv("QBM_PROJECT_DIR")
     if dir_path is None:
@@ -103,9 +113,11 @@ def get_rng(seed: int | None = None) -> RandomState:
     """
     Creates a random number generator with the specified seed value.
 
-    :param seed: Seed value for the rng.
+    Args:
+        seed: Seed value for the rng.
 
-    :returns: Numpy RandomState object.
+    Returns:
+        Numpy RandomState object.
     """
     return RandomState(MT19937(SeedSequence(seed)))
 
@@ -118,18 +130,21 @@ def compute_kl_divergence(
     relative_smooth: bool = False,
 ) -> float:
     """
-    Computes the D_KL(p_data || p_samples).
+    Computes the D_KL(p_data || q_data).
 
-    Note: this is a crude approximation of the KL divergence.
+    Note:
+        this is a crude approximation of the KL divergence.
 
-    :param p_data: Array of data values to compute the p distribution from.
-    :param q_data: Array of data values to compute the q distribution from.
-    :param n_bins: Number of bins to use in histograms.
-    :param epsilon_smooth: Value to use with q distribution smoothing.
-    :param relative_smooth: Whether or not the smoothed values are relative to the p
-        distribution.
+    Args:
+        p_data: Array of data values to compute the p distribution from.
+        q_data: Array of data values to compute the q distribution from.
+        n_bins: Number of bins to use in histograms.
+        epsilon_smooth: Value to use with q distribution smoothing.
+        relative_smooth: Whether or not the smoothed values are relative to the p
+            distribution.
 
-    :returns: D_KL(p || q).
+    Returns:
+        D_KL(p || q).
     """
     hist_data, bin_edges = np.histogram(p_data, bins=n_bins)
     hist_samples, _ = np.histogram(q_data, bins=bin_edges)
@@ -161,9 +176,14 @@ def load_artifact(file_path: str | Path) -> Any:
     """
     Loads a pickle or json artifact (depending on the file extension).
 
-    :param file_path: Path of the file to load.
+    Args:
+        file_path: Path of the file to load.
 
-    :returns: Loaded python object.
+    Returns:
+        Loaded python object.
+
+    Raises:
+        Exception: If the file does not exist or has an unsupported file extension.
     """
     if isinstance(file_path, str):
         file_path = Path(file_path)
@@ -189,12 +209,14 @@ def compute_lr_exp_decay(
     Exponential decay function for use in learning rate scheduling. It is relative, so
     one must multiply the base learning rate by the output of this function.
 
-    :param epoch: Current epoch.
-    :param decay_epoch: Epoch at which to begin the decay.
-    :param period: Decay period.
-    :param base: Base number of the exponential decay.
+    Args:
+        epoch: Current epoch (scalar or array of epochs).
+        decay_epoch: Epoch at which to begin the decay.
+        period: Decay period.
+        base: Base number of the exponential decay.
 
-    :returns: The learning rate scaling factor.
+    Returns:
+        The learning rate scaling factor (scalar or array, matching the input).
     """
     return base ** (np.minimum(decay_epoch - epoch, 0) / period)
 
@@ -203,8 +225,12 @@ def save_artifact(artifact: Any, file_path: str | Path) -> None:
     """
     Saves a pickle or json artifact (depending on the file extension).
 
-    :param artifact: Python object to save.
-    :param file_path: Path of the file to save.
+    Args:
+        artifact: Python object to save.
+        file_path: Path of the file to save.
+
+    Raises:
+        Exception: If the file has an unsupported file extension.
     """
     if isinstance(file_path, str):
         file_path = Path(file_path)
@@ -236,11 +262,13 @@ def compute_lower_tail_concentration(
         - https://www.casact.org/sites/default/files/old/studynotes_venter_tails_of_copulas.pdf
             (section 3)
 
-    :param z: Tail dependence parameter.
-    :param U: Input array for first variable (e.g. X.rank() / (len(X) + 1)).
-    :param V: Input array for second variable (e.g. Y.rank() / (len(Y) + 1)).
+    Args:
+        z: Tail dependence parameter (scalar or array of parameters).
+        U: Input array for first variable (e.g. X.rank() / (len(X) + 1)).
+        V: Input array for second variable (e.g. Y.rank() / (len(Y) + 1)).
 
-    :returns: Lower tail concentration function.
+    Returns:
+        Lower tail concentration function (scalar or array, one value per z).
     """
     z_expanded = np.asarray(z)[..., np.newaxis]
     return np.sum(np.logical_and(z_expanded >= U, z_expanded >= V), axis=-1) / np.sum(
@@ -261,11 +289,13 @@ def compute_upper_tail_concentration(
         - https://www.casact.org/sites/default/files/old/studynotes_venter_tails_of_copulas.pdf
             (section 3)
 
-    :param z: Tail dependence parameter.
-    :param U: Input array for first variable (e.g. X.rank() / (len(X) + 1)).
-    :param V: Input array for second variable (e.g. Y.rank() / (len(Y) + 1)).
+    Args:
+        z: Tail dependence parameter (scalar or array of parameters).
+        U: Input array for first variable (e.g. X.rank() / (len(X) + 1)).
+        V: Input array for second variable (e.g. Y.rank() / (len(Y) + 1)).
 
-    :returns: Upper tail concentration function.
+    Returns:
+        Upper tail concentration function (scalar or array, one value per z).
     """
     z_expanded = np.asarray(z)[..., np.newaxis]
     return np.sum(np.logical_and(z_expanded < U, z_expanded < V), axis=-1) / np.sum(
