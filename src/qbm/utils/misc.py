@@ -200,7 +200,7 @@ def load_artifact(file_path: str | Path) -> Any:
 
 
 def compute_lr_exp_decay(
-    epoch: float | np.ndarray,
+    epoch: float | Sequence[float] | np.ndarray,
     decay_epoch: float,
     period: float,
     base: float = 2.0,
@@ -218,7 +218,8 @@ def compute_lr_exp_decay(
     Returns:
         The learning rate scaling factor (scalar or array, matching the input).
     """
-    return base ** (np.minimum(decay_epoch - epoch, 0) / period)
+    epoch_array = np.asarray(epoch)
+    return base ** (np.minimum(decay_epoch - epoch_array, 0) / period)
 
 
 def save_artifact(artifact: Any, file_path: str | Path) -> None:

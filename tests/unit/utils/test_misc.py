@@ -352,6 +352,13 @@ def test_compute_lr_exp_decay(epoch: int, decay_epoch: int, period: int) -> None
         assert lr_factor == 2 ** ((decay_epoch - epoch) / period)
 
 
+@pytest.mark.parametrize("epochs", [[1, 2, 3], (1, 2, 3)])
+def test_compute_lr_exp_decay_sequence(epochs: list[int] | tuple[int, ...]) -> None:
+    lr_factors = compute_lr_exp_decay(epochs, decay_epoch=2, period=3)
+
+    assert np.allclose(lr_factors, [1, 1, 2 ** (-1 / 3)])
+
+
 @patch("qbm.utils.misc.Path.mkdir")
 def test_save_artifact_parent_does_not_exist(mock_mkdir: Any, monkeypatch: Any) -> None:
     mock_mkdir.return_value = None
