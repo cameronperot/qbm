@@ -87,15 +87,20 @@ class BQRBM(QBMBase):
                 well as the exact sampler.
 
         Raises:
-            Exception: If neither or both of annealer_params and simulation_params are
-                provided, or if a required key is missing from the provided params dict.
+            ValueError: If neither or both of annealer_params and simulation_params are
+                provided, if a required key is missing from the provided params dict,
+                or if the training data values are not in {-1, +1}.
         """
         self.qpu: DWaveSampler | None = None
         self.sampler: AnnealerSampler | None = None
         # Convert from binary to ±1 if necessary
         if set(np.unique(V_train)) == set([0, 1]):
             V_train = self._binary_to_eigen(V_train)
-        assert set(np.unique(V_train)) == set([-1, 1])
+        if set(np.unique(V_train)) != set([-1, 1]):
+            raise ValueError(
+                "V_train values must be in {+1, -1} or {0, 1} "
+                f"(got unique values {set(np.unique(V_train))})"
+            )
 
         self.A_freeze = A_freeze
         self.B_freeze = B_freeze
@@ -108,7 +113,7 @@ class BQRBM(QBMBase):
         if (annealer_params is not None and simulation_params is not None) or (
             annealer_params is None and simulation_params is None
         ):
-            raise Exception(
+            raise ValueError(
                 "You must pass one of either annealer_params or simulation_params, "
                 "not both"
             )
@@ -117,7 +122,7 @@ class BQRBM(QBMBase):
             annealer_params_keys = ["schedule", "embedding"]
             for k in annealer_params_keys:
                 if k not in annealer_params:
-                    raise Exception(
+                    raise ValueError(
                         "Missing key in annealer_params. "
                         f"Required keys are {annealer_params_keys}"
                     )
@@ -129,7 +134,7 @@ class BQRBM(QBMBase):
             simulation_params_keys = ["beta"]
             for k in simulation_params_keys:
                 if k not in simulation_params:
-                    raise Exception(
+                    raise ValueError(
                         "Missing key in simulation_params. "
                         f"Required keys are {simulation_params_keys}"
                     )
@@ -200,12 +205,20 @@ class BQRBM(QBMBase):
                 (model, samples), and returns a dictionary with required keys ["value",
                 "print"], where the "print" value is a string to be printed at the end
                 of each epoch.
+
+        Raises:
+            ValueError: If learning_rate or learning_rate_beta is a sequence whose
+                length is not n_epochs.
         """
         if isinstance(learning_rate, float):
             learning_rates: list[float] = [learning_rate] * n_epochs
         else:
             learning_rates = np.asarray(learning_rate, dtype=np.float64).tolist()
-        assert len(learning_rates) == n_epochs
+        if len(learning_rates) != n_epochs:
+            raise ValueError(
+                f"learning_rate has length {len(learning_rates)}, "
+                f"expected n_epochs = {n_epochs}"
+            )
 
         if isinstance(learning_rate_beta, float):
             beta_learning_rates: list[float] = [learning_rate_beta] * n_epochs
@@ -213,7 +226,11 @@ class BQRBM(QBMBase):
             beta_learning_rates = np.asarray(
                 learning_rate_beta, dtype=np.float64
             ).tolist()
-        assert len(beta_learning_rates) == n_epochs
+        if len(beta_learning_rates) != n_epochs:
+            raise ValueError(
+                f"learning_rate_beta has length {len(beta_learning_rates)}, "
+                f"expected n_epochs = {n_epochs}"
+            )
 
         if not hasattr(self, "callback_history"):
             self.callback_history: list[Mapping[str, Any]] = []
@@ -318,7 +335,7 @@ class BQRBM(QBMBase):
         Raises an exception if h and J values do not fall within h_range and J_range.
 
         Raises:
-            Exception: If the learned h and J values are outside of the allowed range.
+            ValueError: If the learned h and J values are outside of the allowed range.
         """
         h_satisfied = np.logical_and(
             self.h > self.h_range.min(), self.h < self.h_range.max()
@@ -328,7 +345,7 @@ class BQRBM(QBMBase):
         ).all()
 
         if not h_satisfied or not J_satisfied:
-            raise Exception("Learned h and J values outside of allowed range")
+            raise ValueError("Learned h and J values outside of allowed range")
 
     def _compute_positive_grads(self, V_pos: np.ndarray) -> None:
         """
@@ -454,7 +471,8 @@ class BQRBM(QBMBase):
         gauge: np.ndarray | None = None
         if use_gauge:
             gauge = self.rng.choice([-1, 1], self.n_qubits)
-            assert gauge is not None
+            if gauge is None:
+                raise RuntimeError("Failed to generate a random gauge")
             h *= gauge
             J *= np.outer(gauge, gauge)
 
@@ -465,7 +483,8 @@ class BQRBM(QBMBase):
             chain_strength = min(chain_strength, self.J_range.max())
 
         # Get samples from the annealer
-        assert self.sampler is not None
+        if self.sampler is None:
+            raise RuntimeError("Annealer sampler is not initialized")
         samples = self.sampler.sample_ising(
             h,
             J,

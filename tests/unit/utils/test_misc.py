@@ -145,7 +145,7 @@ def test_filter_df_on_values_drop_filter_columns_True(df: pd.DataFrame) -> None:
 def test_get_project_dir_env_not_set(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.os.getenv", lambda x: None)
 
-    with pytest.raises(Exception, match="QBM_PROJECT_DIR env var not set"):
+    with pytest.raises(RuntimeError, match="QBM_PROJECT_DIR env var not set"):
         get_project_dir()
 
 
@@ -153,7 +153,7 @@ def test_get_project_dir_path_does_not_exist(monkeypatch: Any) -> None:
     monkeypatch.setattr("qbm.utils.misc.os.getenv", lambda x: "/test/path")
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: False)
 
-    with pytest.raises(Exception, match="does not exist"):
+    with pytest.raises(FileNotFoundError, match="does not exist"):
         get_project_dir()
 
 
@@ -271,7 +271,7 @@ def test_load_artifact_invalid_file_path(monkeypatch: Any) -> None:
 
     file_path = Path("/test/path/file")
 
-    with pytest.raises(Exception, match="does not exist"):
+    with pytest.raises(FileNotFoundError, match="does not exist"):
         load_artifact(file_path)
 
 
@@ -280,7 +280,7 @@ def test_load_artifact_invalid_file_extension(monkeypatch: Any) -> None:
 
     file_path = Path("/test/path/file")
 
-    with pytest.raises(Exception, match="does not exist"):
+    with pytest.raises(ValueError, match="unsupported extension"):
         load_artifact(file_path)
 
 
@@ -379,7 +379,7 @@ def test_save_artifact_invalid_suffix(monkeypatch: Any) -> None:
     file_path = Path("/test/path/file.invalid")
     artifact = {"a": 1, "b": 2}
 
-    with pytest.raises(Exception, match="Invalid file extension"):
+    with pytest.raises(ValueError, match="unsupported extension"):
         save_artifact(artifact, file_path)
 
 
@@ -439,3 +439,25 @@ def test_save_artifact_pickle_success_str_path(
 
         mock_file.assert_called_with(Path(file_path), "wb")
         mock_dump.assert_called()
+
+
+def test_compute_df_ensemble_stats_empty_dfs_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="dfs must not be empty"):
+        compute_df_ensemble_stats([])
+
+
+def test_compute_kl_divergence_empty_p_data_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="p_data must not be empty"):
+        compute_kl_divergence(p_data=np.array([]), q_data=np.array([1.0, 2.0]))
+
+
+def test_compute_kl_divergence_empty_q_data_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="q_data must not be empty"):
+        compute_kl_divergence(p_data=np.array([1.0, 2.0]), q_data=np.array([]))
+
+
+def test_compute_kl_divergence_invalid_n_bins_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="n_bins must be positive"):
+        compute_kl_divergence(
+            p_data=np.array([1.0, 2.0]), q_data=np.array([1.0, 2.0]), n_bins=0
+        )

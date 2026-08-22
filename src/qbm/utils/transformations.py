@@ -29,13 +29,25 @@ class PowerTransformer:
             power: Power at which to scale the outlier.
             columns: Optional list of columns to apply the transformation to. If no
                 columns are provided, then all columns are transformed.
+        Raises:
+            ValueError: If power >= 1, if threshold < 1, if power <= 0, or if
+                columns is not a subset of df.columns.
         """
-        assert power < 1
-        assert threshold >= 1
+        if power >= 1:
+            raise ValueError(f"power must be < 1 (got {power})")
+        if power <= 0:
+            raise ValueError(f"power must be > 0 (got {power})")
+        if threshold < 1:
+            raise ValueError(f"threshold must be >= 1 (got {threshold})")
 
         if columns is None:
             self.columns = df.columns
         else:
+            if not set(columns).issubset(df.columns):
+                raise ValueError(
+                    f"columns {list(columns)} are not a subset of "
+                    f"df.columns {list(df.columns)}"
+                )
             self.columns = columns
         self.power = power
         self.threshold = threshold
@@ -58,7 +70,15 @@ class PowerTransformer:
 
         Returns:
             Dataframe of transformed data.
+
+        Raises:
+            ValueError: If a configured column is missing from df.
         """
+        if not set(self.columns).issubset(df.columns):
+            raise ValueError(
+                f"df is missing configured columns "
+                f"{list(set(self.columns) - set(df.columns))}"
+            )
         if not inplace:
             df = df.copy()
 
@@ -85,7 +105,15 @@ class PowerTransformer:
 
         Returns:
             Dataframe of untransformed data.
+
+        Raises:
+            ValueError: If a configured column is missing from df.
         """
+        if not set(self.columns).issubset(df.columns):
+            raise ValueError(
+                f"df is missing configured columns "
+                f"{list(set(self.columns) - set(df.columns))}"
+            )
         if not inplace:
             df = df.copy()
 

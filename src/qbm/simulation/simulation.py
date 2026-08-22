@@ -27,7 +27,14 @@ def get_pauli_kron(n_visible: int, n_hidden: int) -> PauliKron:
         Dictionary of Kronecker product Pauli terms, with keys ("x", i) mapping to
         sparse matrices I ⊗ σ_x^(i) ⊗ I, and keys ("z_diag", i) and ("zz_diag", i, j)
         mapping to the diagonals of I ⊗ σ_z^(i) ⊗ I and their pairwise products.
+
+    Raises:
+        ValueError: If n_visible or n_hidden is not positive.
     """
+    if n_visible <= 0:
+        raise ValueError(f"n_visible must be positive (got {n_visible})")
+    if n_hidden <= 0:
+        raise ValueError(f"n_hidden must be positive (got {n_hidden})")
     # Set Kronecker product Pauli matrices
     n_qubits = n_visible + n_hidden
     pauli_kron = {}
@@ -84,7 +91,14 @@ def compute_H(
 
     Returns:
         Hamiltonian matrix H.
+
+    Raises:
+        ValueError: If the length of h or the shape of J does not match n_qubits.
     """
+    if len(h) != n_qubits:
+        raise ValueError(f"h has length {len(h)}, expected n_qubits = {n_qubits}")
+    if J.shape != (n_qubits, n_qubits):
+        raise ValueError(f"J has shape {J.shape}, expected ({n_qubits}, {n_qubits})")
     # Diagonal terms
     H_diag = np.zeros(2**n_qubits)
     for i in range(n_qubits):
@@ -120,7 +134,14 @@ def compute_rho(H: np.ndarray, beta: float, diagonal: bool = False) -> np.ndarra
 
     Returns:
         Density matrix rho.
+
+    Raises:
+        ValueError: If H is not a square matrix or if beta is not positive.
     """
+    if H.ndim != 2 or H.shape[0] != H.shape[1]:
+        raise ValueError(f"H must be a square matrix (got shape {H.shape})")
+    if beta <= 0:
+        raise ValueError(f"beta must be positive (got {beta})")
     # If diagonal then compute directly, else use eigen decomposition
     if diagonal:
         Lambda = H.diagonal()

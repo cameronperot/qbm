@@ -130,7 +130,7 @@ def test_init_simultor_bad_params(monkeypatch: Any) -> None:
     simulation_params = {}
     seed = 0
 
-    with pytest.raises(Exception, match="Missing key in simulation_params"):
+    with pytest.raises(ValueError, match="Missing key in simulation_params"):
         BQRBM(
             V_train=V_train,
             n_hidden=n_hidden,
@@ -159,7 +159,7 @@ def test_init_simultor_annealer_both_fail(monkeypatch: Any) -> None:
     simulation_params = {"beta": 1.0}
 
     with pytest.raises(
-        Exception, match="one of either annealer_params or simulation_params"
+        ValueError, match="one of either annealer_params or simulation_params"
     ):
         BQRBM(
             V_train=V_train,
@@ -185,7 +185,7 @@ def test_init_simultor_annealer_none_fail(monkeypatch: Any) -> None:
     B_freeze = 1.1
 
     with pytest.raises(
-        Exception, match="one of either annealer_params or simulation_params"
+        ValueError, match="one of either annealer_params or simulation_params"
     ):
         BQRBM(
             V_train=V_train,
@@ -255,7 +255,7 @@ def test_init_annealer_bad_params(monkeypatch: Any) -> None:
     annealer_params = {}
     seed = 0
 
-    with pytest.raises(Exception, match="Missing key in annealer_params"):
+    with pytest.raises(ValueError, match="Missing key in annealer_params"):
         BQRBM(
             V_train=V_train,
             n_hidden=n_hidden,
@@ -394,3 +394,49 @@ def test__update_beta(monkeypatch: Any, model_simulation: BQRBM) -> None:
     assert model_simulation.beta == np.clip(
         beta + Δbeta, model_simulation.beta_range[0], model_simulation.beta_range[1]
     )
+
+
+def test_init_invalid_V_train_raises_value_error() -> None:
+    rng = get_rng(0)
+    V_train = rng.choice([0, 2], size=(n_samples, n_visible))
+
+    with pytest.raises(ValueError, match="must be in"):
+        BQRBM(
+            V_train=V_train,
+            n_hidden=n_hidden,
+            A_freeze=0.1,
+            B_freeze=1.1,
+            simulation_params={"beta": 1.0},
+        )
+
+
+def test_train_learning_rate_length_mismatch_raises_value_error(
+    model_simulation: BQRBM,
+) -> None:
+    with pytest.raises(ValueError, match="learning_rate has length"):
+        model_simulation.train(n_epochs=2, learning_rate=[learning_rate])
+
+
+def test_train_learning_rate_beta_length_mismatch_raises_value_error(
+    model_simulation: BQRBM,
+) -> None:
+    with pytest.raises(ValueError, match="learning_rate_beta has length"):
+        model_simulation.train(n_epochs=2, learning_rate_beta=[learning_rate])
+
+
+def test__check_h_and_H_ranges_h_out_of_range_raises_value_error(
+    model_simulation: BQRBM,
+) -> None:
+    model_simulation.h_range = np.array([1, 2])
+
+    with pytest.raises(ValueError, match="outside of allowed range"):
+        model_simulation._check_h_and_H_ranges()
+
+
+def test__check_h_and_H_ranges_J_out_of_range_raises_value_error(
+    model_simulation: BQRBM,
+) -> None:
+    model_simulation.J_range = np.array([1, 2])
+
+    with pytest.raises(ValueError, match="outside of allowed range"):
+        model_simulation._check_h_and_H_ranges()

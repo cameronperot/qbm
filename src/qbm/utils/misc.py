@@ -24,14 +24,23 @@ def compute_df_ensemble_stats(
 
     Returns:
         Dictionary of dataframes with the means, medians, and standard deviations.
+
+    Raises:
+        ValueError: If dfs is empty.
+        TypeError: If any of the computed statistics is not a DataFrame.
     """
+    if len(dfs) == 0:
+        raise ValueError("dfs must not be empty")
     df = pd.concat(dfs)
     means = df.groupby(df.index).mean()
     medians = df.groupby(df.index).median()
     stds = df.groupby(df.index).std()
-    assert isinstance(means, pd.DataFrame)
-    assert isinstance(medians, pd.DataFrame)
-    assert isinstance(stds, pd.DataFrame)
+    if not isinstance(means, pd.DataFrame):
+        raise TypeError("Grouped means is not a DataFrame")
+    if not isinstance(medians, pd.DataFrame):
+        raise TypeError("Grouped medians is not a DataFrame")
+    if not isinstance(stds, pd.DataFrame):
+        raise TypeError("Grouped stds is not a DataFrame")
 
     return {"means": means, "medians": medians, "stds": stds}
 
@@ -96,17 +105,18 @@ def get_project_dir() -> Path:
         Path object of the project directory.
 
     Raises:
-        Exception: If the QBM_PROJECT_DIR env var is not set or the path does not exist.
+        RuntimeError: If the QBM_PROJECT_DIR env var is not set.
+        FileNotFoundError: If the path does not exist.
     """
     dir_path = os.getenv("QBM_PROJECT_DIR")
     if dir_path is None:
-        raise Exception("QBM_PROJECT_DIR env var not set")
+        raise RuntimeError("QBM_PROJECT_DIR env var not set")
 
     dir_path = Path(dir_path)
     if dir_path.exists():
         return dir_path
     else:
-        raise Exception(f"Path '{dir_path}' does not exist")
+        raise FileNotFoundError(f"Path '{dir_path}' does not exist")
 
 
 def get_rng(seed: int | None = None) -> RandomState:
@@ -145,7 +155,17 @@ def compute_kl_divergence(
 
     Returns:
         D_KL(p || q).
+
+    Raises:
+        ValueError: If p_data or q_data is empty, if n_bins is not positive, or if
+            either distribution does not sum to 1.
     """
+    if p_data.shape[0] == 0:
+        raise ValueError("p_data must not be empty")
+    if q_data.shape[0] == 0:
+        raise ValueError("q_data must not be empty")
+    if n_bins <= 0:
+        raise ValueError(f"n_bins must be positive (got {n_bins})")
     hist_data, bin_edges = np.histogram(p_data, bins=n_bins)
     hist_samples, _ = np.histogram(q_data, bins=bin_edges)
 
@@ -162,8 +182,10 @@ def compute_kl_divergence(
 
         q[not_smooth_mask] -= q[smooth_mask].sum() / not_smooth_mask.sum()
 
-    assert np.isclose(p.sum(), 1, atol=1e-3)
-    assert np.isclose(q.sum(), 1, atol=1e-3)
+    if not np.isclose(p.sum(), 1, atol=1e-3):
+        raise ValueError(f"p distribution does not sum to 1 (sums to {p.sum()})")
+    if not np.isclose(q.sum(), 1, atol=1e-3):
+        raise ValueError(f"q distribution does not sum to 1 (sums to {q.sum()})")
 
     support = np.logical_and(p > 0, q > 0)
     p = p[support]
@@ -183,13 +205,19 @@ def load_artifact(file_path: str | Path) -> Any:
         Loaded python object.
 
     Raises:
-        Exception: If the file does not exist or has an unsupported file extension.
+        FileNotFoundError: If the file does not exist.
+        ValueError: If the file has an unsupported file extension.
     """
     if isinstance(file_path, str):
         file_path = Path(file_path)
 
-    if not file_path.exists() or file_path.suffix not in (".json", ".pkl"):
-        raise Exception(f"File {file_path} does not exist")
+    if not file_path.exists():
+        raise FileNotFoundError(f"File {file_path} does not exist")
+    if file_path.suffix not in (".json", ".pkl"):
+        raise ValueError(
+            f"File {file_path} has an unsupported extension "
+            f"'{file_path.suffix}' (must be '.json' or '.pkl')"
+        )
 
     if file_path.suffix == ".json":
         with open(file_path) as f:
@@ -231,7 +259,7 @@ def save_artifact(artifact: Any, file_path: str | Path) -> None:
         file_path: Path of the file to save.
 
     Raises:
-        Exception: If the file has an unsupported file extension.
+        ValueError: If the file has an unsupported file extension.
     """
     if isinstance(file_path, str):
         file_path = Path(file_path)
@@ -240,7 +268,10 @@ def save_artifact(artifact: Any, file_path: str | Path) -> None:
         file_path.parent.mkdir(parents=True)
 
     if file_path.suffix not in (".json", ".pkl"):
-        raise Exception("Invalid file extension")
+        raise ValueError(
+            f"File {file_path} has an unsupported extension "
+            f"'{file_path.suffix}' (must be '.json' or '.pkl')"
+        )
 
     if file_path.suffix == ".json":
         with open(file_path, "w") as f:
