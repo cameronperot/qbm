@@ -7,7 +7,7 @@ from scipy.linalg import eigh
 from scipy.sparse import csr_matrix, diags, identity, kron, spmatrix
 
 type PauliKron = dict[tuple[str, int] | tuple[str, int, int], spmatrix | np.ndarray]
-# set constants
+# Set constants
 sparse_X = csr_matrix(([1, 1], ([0, 1], [1, 0])), dtype=np.float64)
 sparse_Z = csr_matrix(([1, -1], ([0, 1], [0, 1])), dtype=np.float64)
 
@@ -28,7 +28,7 @@ def get_pauli_kron(n_visible: int, n_hidden: int) -> PauliKron:
         sparse matrices I ⊗ σ_x^(i) ⊗ I, and keys ("z_diag", i) and ("zz_diag", i, j)
         mapping to the diagonals of I ⊗ σ_z^(i) ⊗ I and their pairwise products.
     """
-    # set Kronecker product Pauli matrices
+    # Set Kronecker product Pauli matrices
     n_qubits = n_visible + n_hidden
     pauli_kron = {}
     for i in range(n_qubits):
@@ -85,23 +85,23 @@ def compute_H(
     Returns:
         Hamiltonian matrix H.
     """
-    # diagonal terms
+    # Diagonal terms
     H_diag = np.zeros(2**n_qubits)
     for i in range(n_qubits):
-        # linear terms
+        # Linear terms
         if h[i] != 0:
             H_diag += (B * h[i]) * pauli_kron["z_diag", i]
 
-        # quadratic terms
+        # Quadratic terms
         for j in range(i + 1, n_qubits):
             if J[i, j] != 0:
                 H_diag += (B * J[i, j]) * pauli_kron["zz_diag", i, j]
 
-    # return just the diagonal if H is a diagonal matrix
+    # Return just the diagonal if H is a diagonal matrix
     if A == 0:
         return np.diag(H_diag)
 
-    # off-diagonal terms
+    # Off-diagonal terms
     H = csr_matrix((2**n_qubits, 2**n_qubits), dtype=np.float64)
     for i in range(n_qubits):
         H -= A * pauli_kron["x", i]
@@ -121,7 +121,7 @@ def compute_rho(H: np.ndarray, beta: float, diagonal: bool = False) -> np.ndarra
     Returns:
         Density matrix rho.
     """
-    # if diagonal then compute directly, else use eigen decomposition
+    # If diagonal then compute directly, else use eigen decomposition
     if diagonal:
         Lambda = H.diagonal()
         exp_beta_Lambda = np.exp(-beta * (Lambda - Lambda.min()))

@@ -55,7 +55,7 @@ class Discretizer:
                     self.params[column]["x_min"] -= self.epsilon[column]["min"]
                     self.params[column]["x_max"] += self.epsilon[column]["max"]
 
-            # update the split indices
+            # Update the split indices
             if i < len(self.columns) - 1:
                 self.split_indices.append(
                     self.params[column]["n_bits"]
