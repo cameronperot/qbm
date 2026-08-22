@@ -180,7 +180,7 @@ def load_artifact(file_path: str | Path) -> Any:
 
 
 def compute_lr_exp_decay(
-    epoch: float | np.ndarray,
+    epoch: float | Sequence[float] | np.ndarray,
     decay_epoch: float,
     period: float,
     base: float = 2.0,
@@ -189,14 +189,16 @@ def compute_lr_exp_decay(
     Exponential decay function for use in learning rate scheduling. It is relative, so
     one must multiply the base learning rate by the output of this function.
 
-    :param epoch: Current epoch.
+    :param epoch: Current epoch, or a sequence of epochs.
     :param decay_epoch: Epoch at which to begin the decay.
     :param period: Decay period.
     :param base: Base number of the exponential decay.
 
-    :returns: The learning rate scaling factor.
+    :returns: The learning rate scaling factor(s). For a scalar input, a scalar; for a
+        sequence input, an array with one scaling factor per epoch.
     """
-    return base ** (np.minimum(decay_epoch - epoch, 0) / period)
+    epoch_array = np.asarray(epoch)
+    return base ** (np.minimum(decay_epoch - epoch_array, 0) / period)
 
 
 def save_artifact(artifact: Any, file_path: str | Path) -> None:
