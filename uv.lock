@@ -3,7 +3,7 @@ revision = 3
 requires-python = ">=3.13"
 
 [options]
-exclude-newer = "2026-07-22T13:22:01.759042671Z"
+exclude-newer = "2026-07-23T13:11:55.432380761Z"
 exclude-newer-span = "P30D"
 
 [options.exclude-newer-package]
@@ -2020,7 +2020,7 @@ wheels = [
 
 [[package]]
 name = "qbm"
-version = "0.1.2"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "dwave-ocean-sdk" },
