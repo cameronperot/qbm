@@ -89,10 +89,17 @@ class BQRBM(QBMBase):
         Raises:
             ValueError: If neither or both of annealer_params and simulation_params are
                 provided, if a required key is missing from the provided params dict,
-                or if the training data values are not in {-1, +1}.
+                if beta_initial is not positive, if beta_range does not satisfy
+                0 < min < max, or if the training data values are not in {-1, +1}.
         """
         self.qpu: DWaveSampler | None = None
         self.sampler: AnnealerSampler | None = None
+        if beta_initial <= 0:
+            raise ValueError(f"beta_initial must be positive (got {beta_initial})")
+        if beta_range[0] <= 0 or beta_range[0] >= beta_range[1]:
+            raise ValueError(
+                f"beta_range must satisfy 0 < min < max (got {list(beta_range)})"
+            )
         # Convert from binary to ±1 if necessary
         if set(np.unique(V_train)) == set([0, 1]):
             V_train = self._binary_to_eigen(V_train)
