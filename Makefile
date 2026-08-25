@@ -13,7 +13,8 @@ help:
 	@echo "  make typecheck     - Run static type checking with ty"
 	@echo "  make check         - Run all checks (lint, format-check, typecheck, test)"
 	@echo "  make pre-commit    - Run pre-commit hooks on all files"
-	@echo "  make docs          - Build Sphinx documentation"
+	@echo "  make docs-build    - Build MkDocs documentation"
+	@echo "  make docs-serve    - Serve MkDocs documentation"
 	@echo "  make clean         - Clean cache directories and build artifacts"
 
 sync:
@@ -47,10 +48,12 @@ check: lint format-check typecheck test
 pre-commit:
 	uv run pre-commit run --all-files
 
-docs:
-	uv run sphinx-apidoc -f -o docs/source src/qbm
-	uv run sphinx-build -d docs/_build/doctrees docs/source docs/_build/html
+docs-build:
+	uv run mkdocs build --strict
+
+docs-serve:
+	uv run mkdocs serve --strict
 
 clean:
-	rm -rf .coverage .coverage.* .pytest_cache .ruff_cache .mypy_cache build dist docs/_build
+	rm -rf .coverage .coverage.* .pytest_cache .ruff_cache .mypy_cache build dist site
 	find . -type d -name "__pycache__" -exec rm -rf {} +

@@ -29,21 +29,23 @@ dependencies = [
 dev = [
     "ipykernel>=7.3.0",
     "ipython>=9.6.0",
-    "m2r2>=0.3.4",
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.27.0",
+    "mkdocs-include-markdown-plugin>=7.0.0",
     "pre-commit>=4.6.1",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "python-language-server>=0.36.2",
     "ruff>=0.16.4",
-    "sphinx>=9.1.0",
-    "sphinx-rtd-theme>=3.1.0",
     "twine>=6.2.0",
     "ty>=0.0.73",
+    "mkdocs-jupyter>=0.26.3",
 ]
 
 [project.urls]
 Homepage = "https://github.com/cameronperot/qbm"
-Documentation = "https://cameronperot.github.io/qbm/html/index.html"
+Documentation = "https://cameronperot.github.io/qbm/"
 
 [build-system]
 requires = ["hatchling"]
