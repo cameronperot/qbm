@@ -203,3 +203,55 @@ def test_undiscretize_df(
     df_recovered = discretizer.undiscretize_df(df_discrete)
 
     assert np.isclose(df_recovered, df).all()
+
+
+def test_Discretizer_init_invalid_n_bits_raises_value_error() -> None:
+    df = pd.DataFrame({"a": np.arange(16)})
+
+    with pytest.raises(ValueError, match="n_bits must be positive"):
+        Discretizer(df, n_bits=0)
+
+
+def test_Discretizer_init_zero_range_column_raises_value_error() -> None:
+    df = pd.DataFrame({"a": np.ones(16)})
+
+    with pytest.raises(ValueError, match="zero range"):
+        Discretizer(df, n_bits=4)
+
+
+def test_int_to_bit_vector_negative_x_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="x must be non-negative"):
+        Discretizer.int_to_bit_vector(-1, 4)
+
+
+def test_int_to_bit_vector_invalid_n_bits_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="n_bits must be positive"):
+        Discretizer.int_to_bit_vector(1, 0)
+
+
+def test_int_to_bit_vector_x_too_large_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="does not fit in"):
+        Discretizer.int_to_bit_vector(16, 4)
+
+
+def test_bit_vector_to_int_invalid_element_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="must be 0 or 1"):
+        Discretizer.bit_vector_to_int([0, 2, 1])
+
+
+def test_df_to_bit_array_column_mismatch_raises_value_error() -> None:
+    df = pd.DataFrame({"a": np.arange(16), "b": np.arange(16)})
+    discretizer = Discretizer(df, n_bits=4)
+
+    with pytest.raises(ValueError, match="do not match"):
+        discretizer.df_to_bit_array(df.drop(columns=["b"]))
+
+
+def test_bit_array_to_df_wrong_width_raises_value_error() -> None:
+    df = pd.DataFrame({"a": np.arange(16)})
+    discretizer = Discretizer(df, n_bits=4)
+
+    with pytest.raises(ValueError, match="does not match"):
+        discretizer.bit_array_to_df(
+            np.zeros((16, discretizer.n_bits_total + 1), dtype=int)
+        )

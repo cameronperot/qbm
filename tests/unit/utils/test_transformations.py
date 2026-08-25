@@ -153,3 +153,49 @@ def test_PowerTransformer_inverse_transform_subset_columns(
 
     for column in set(df.columns) - set(columns):
         assert (df_inverse_transformed[column] == df[column]).all()
+
+
+def test_PowerTransformer_init_invalid_power_raises_value_error(
+    df: pd.DataFrame,
+) -> None:
+    with pytest.raises(ValueError, match="power must be < 1"):
+        PowerTransformer(df, power=1.0)
+
+
+def test_PowerTransformer_init_nonpositive_power_raises_value_error(
+    df: pd.DataFrame,
+) -> None:
+    with pytest.raises(ValueError, match="power must be > 0"):
+        PowerTransformer(df, power=0.0)
+
+
+def test_PowerTransformer_init_invalid_threshold_raises_value_error(
+    df: pd.DataFrame,
+) -> None:
+    with pytest.raises(ValueError, match="threshold must be >= 1"):
+        PowerTransformer(df, threshold=0.5)
+
+
+def test_PowerTransformer_init_unknown_columns_raises_value_error(
+    df: pd.DataFrame,
+) -> None:
+    with pytest.raises(ValueError, match="not a subset"):
+        PowerTransformer(df, columns=["a", "d"])
+
+
+def test_PowerTransformer_transform_missing_column_raises_value_error(
+    df: pd.DataFrame,
+) -> None:
+    transformer = PowerTransformer(df)
+
+    with pytest.raises(ValueError, match="missing configured columns"):
+        transformer.transform(df.drop(columns=["a"]))
+
+
+def test_PowerTransformer_inverse_transform_missing_column_raises_value_error(
+    df: pd.DataFrame,
+) -> None:
+    transformer = PowerTransformer(df)
+
+    with pytest.raises(ValueError, match="missing configured columns"):
+        transformer.inverse_transform(df.drop(columns=["a"]))

@@ -34,7 +34,13 @@ class Discretizer:
             df: Dataframe of numerical values.
             n_bits: Number of bits to discretize to.
             epsilon: Optional dictionary of min/max offset values.
+
+        Raises:
+            ValueError: If n_bits is not positive, or if any non-bit column has
+                zero range (x_max <= x_min).
         """
+        if n_bits <= 0:
+            raise ValueError(f"n_bits must be positive (got {n_bits})")
         self.columns = df.columns
         self.n_bits = n_bits
         self.epsilon = epsilon
@@ -46,16 +52,23 @@ class Discretizer:
             if column.endswith("_bit"):
                 self.params[column] = {"n_bits": 1}
             else:
+                x_min = df[column].min()
+                x_max = df[column].max()
+                if column in self.epsilon:
+                    x_min -= self.epsilon[column]["min"]
+                    x_max += self.epsilon[column]["max"]
+                if x_max <= x_min:
+                    raise ValueError(
+                        f"Column '{column}' has zero range "
+                        f"(x_min = {x_min}, x_max = {x_max})"
+                    )
                 self.params[column] = {
                     "n_bits": self.n_bits,
-                    "x_min": df[column].min(),
-                    "x_max": df[column].max(),
+                    "x_min": x_min,
+                    "x_max": x_max,
                 }
-                if column in self.epsilon:
-                    self.params[column]["x_min"] -= self.epsilon[column]["min"]
-                    self.params[column]["x_max"] += self.epsilon[column]["max"]
 
-            # update the split indices
+            # Update the split indices
             if i < len(self.columns) - 1:
                 self.split_indices.append(
                     self.params[column]["n_bits"]
@@ -75,7 +88,14 @@ class Discretizer:
 
         Returns:
             Integer representation of the input bit vector.
+
+        Raises:
+            ValueError: If any element of bit_vector is not 0 or 1.
         """
+        if any(x not in (0, 1) for x in bit_vector):
+            raise ValueError(
+                f"bit_vector elements must be 0 or 1 (got {list(bit_vector)})"
+            )
         return int("".join(str(x) for x in bit_vector), 2)
 
     @staticmethod
@@ -102,7 +122,19 @@ class Discretizer:
 
         Returns:
             Bit vector of length n_bits.
+
+        Raises:
+            ValueError: If x is negative, if n_bits is not positive, or if x does
+                not fit in n_bits bits.
         """
+        if x < 0:
+            raise ValueError(f"x must be non-negative (got {x})")
+        if n_bits <= 0:
+            raise ValueError(f"n_bits must be positive (got {n_bits})")
+        if x >= 2**n_bits:
+            raise ValueError(
+                f"x = {x} does not fit in {n_bits} bits (max is {2**n_bits - 1})"
+            )
         return [1 if i == "1" else 0 for i in bin(x)[2:].zfill(n_bits)]
 
     @staticmethod
@@ -119,12 +151,20 @@ class Discretizer:
 
         Returns:
             An integer representation of x.
+
+        Raises:
+            ValueError: If x is out of the range [0, 2**n_bits - 1].
+            TypeError: If the discretized value is not an integer.
         """
         scaling_factor = (2**n_bits - 1) / (x_max - x_min)
 
         x = round((x - x_min) * scaling_factor)
-        assert x >= 0 and x <= 2**n_bits - 1
-        assert isinstance(x, int)
+        if x < 0 or x > 2**n_bits - 1:
+            raise ValueError(
+                f"Discretized value {x} is out of range [0, {2**n_bits - 1}]"
+            )
+        if not isinstance(x, int):
+            raise TypeError(f"Discretized value {x!r} is not an integer")
         return x
 
     @staticmethod
@@ -141,10 +181,14 @@ class Discretizer:
 
         Returns:
             A float representation of x.
+
+        Raises:
+            ValueError: If x >= 2**n_bits.
         """
         scaling_factor = (2**n_bits - 1) / (x_max - x_min)
 
-        assert x < 2**n_bits
+        if x >= 2**n_bits:
+            raise ValueError(f"Value {x} is out of range [0, {2**n_bits - 1}]")
         return x / scaling_factor + x_min
 
     def discretize_df(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -198,8 +242,15 @@ class Discretizer:
 
         Returns:
             Array of bits of shape (df.shape[0], self.n_bits_total).
+
+        Raises:
+            ValueError: If the columns of df do not match the discretizer's columns.
         """
-        assert set(self.columns) == set(df.columns)
+        if set(self.columns) != set(df.columns):
+            raise ValueError(
+                f"df columns {list(df.columns)} do not match the discretizer's "
+                f"columns {list(self.columns)}"
+            )
 
         df = self.discretize_df(df)
         bit_array = np.hstack(
@@ -225,8 +276,15 @@ class Discretizer:
 
         Returns:
             Dataframe of shape (bit_array.shape[0], len(self.columns)).
+
+        Raises:
+            ValueError: If the width of bit_array does not match n_bits_total.
         """
-        assert len(bit_array[0]) == self.n_bits_total
+        if len(bit_array[0]) != self.n_bits_total:
+            raise ValueError(
+                f"bit_array width {len(bit_array[0])} does not match "
+                f"n_bits_total {self.n_bits_total}"
+            )
 
         rows = [
             [
