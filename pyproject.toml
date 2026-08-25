@@ -41,6 +41,7 @@ dev = [
     "twine>=6.2.0",
     "ty>=0.0.73",
     "mkdocs-jupyter>=0.26.3",
+    "ipython-autotime>=0.3.2",
 ]
 
 [project.urls]

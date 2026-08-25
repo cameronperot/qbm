@@ -248,7 +248,7 @@ class BQRBM(QBMBase):
                 V_pos = self.V_train[mini_batch_indices]
                 self._compute_positive_grads(V_pos)
                 self._compute_negative_grads(V_pos.shape[0])
-                self._apply_grads(self.learning_rate / V_pos.shape[0])
+                self._apply_grads(self.learning_rate)
                 self._check_h_and_H_ranges()
 
             # Update β
