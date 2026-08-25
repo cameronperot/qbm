@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import Callable, Mapping, Sequence
 from datetime import timedelta
 from pathlib import Path
@@ -301,7 +299,7 @@ class BQRBM(QBMBase):
             self._initialize_annealer()
 
     @staticmethod
-    def load(file_path: str | Path, initialize_annealer: bool = True) -> BQRBM:
+    def load(file_path: str | Path, initialize_annealer: bool = True) -> "BQRBM":
         """
         Loads the BQRBM model at file_path. Necessary because of pickling issues
         with the qpu and sampler objects.

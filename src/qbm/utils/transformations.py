@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import Hashable, Sequence
 
 import numpy as np
