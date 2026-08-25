@@ -155,7 +155,7 @@ def load_artifact(file_path):
         raise Exception(f"File {file_path} does not exist")
 
     if file_path.suffix == ".json":
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             return json.load(f)
     elif file_path.suffix == ".pkl":
         with open(file_path, "rb") as f:
@@ -219,7 +219,7 @@ def lower_tail_concentration(z, U, V):
 
     :returns: Lower tail concentration function.
     """
-    return np.sum(np.logical_and(U <= z, V <= z)) / np.sum(U <= z)
+    return np.sum(np.logical_and(z >= U, z >= V)) / np.sum(z >= U)
 
 
 lower_tail_concentration = np.vectorize(lower_tail_concentration, excluded=[1, 2])
@@ -242,7 +242,7 @@ def upper_tail_concentration(z, U, V):
 
     :returns: Upper tail concentration function.
     """
-    return np.sum(np.logical_and(U > z, V > z)) / np.sum(U > z)
+    return np.sum(np.logical_and(z < U, z < V)) / np.sum(z < U)
 
 
 upper_tail_concentration = np.vectorize(upper_tail_concentration, excluded=[1, 2])

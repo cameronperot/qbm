@@ -14,6 +14,7 @@ This package originated as part of the thesis [*Quantum Boltzmann Machines: Appl
         * [Sampling](#sampling)
         * [Saving and Loading](#saving-and-loading)
     * [Example](#example)
+* [Development](#development)
 * [References](#references)
 
 ## Installation
@@ -86,6 +87,19 @@ model = BQRBM.load("/path/to/model.pkl")
 
 ## Example
 An example notebook can be found [here](example/qbm_example.ipynb)
+
+## Development
+Set up the development environment with
+```
+uv sync
+```
+
+The following commands are available for development:
+* Tests: `uv run pytest` (coverage: `uv run pytest --cov`)
+* Lint: `uv run ruff check .`
+* Format: `uv run ruff format .`
+* Type check: `uv run ty check`
+* Add a dependency: `uv add <package>`
 
 # References
 <a name="1">[1]</a> Mohammad H. Amin et al. “Quantum Boltzmann Machine”. In: Phys. Rev. X 8 (2 May 2018), p. 021050. doi: 10.1103/PhysRevX.8.021050. url: [https://link.aps.org/doi/10.1103/PhysRevX.8.021050](https://link.aps.org/doi/10.1103/PhysRevX.8.021050).

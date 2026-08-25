@@ -15,20 +15,17 @@ from .misc import (
 from .transformations import PowerTransformer
 
 __all__ = [
-    # discretization
     "Discretizer",
-    # misc.
-    "df_stats",
+    "PowerTransformer",
     "df_ensemble_stats",
+    "df_stats",
     "filter_df_on_values",
     "get_project_dir",
     "get_rng",
     "kl_divergence",
     "load_artifact",
+    "lower_tail_concentration",
     "lr_exp_decay",
     "save_artifact",
-    "lower_tail_concentration",
     "upper_tail_concentration",
-    # transformations
-    "PowerTransformer",
 ]

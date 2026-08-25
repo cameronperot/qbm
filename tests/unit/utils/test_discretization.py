@@ -24,7 +24,9 @@ def df_and_discretization_params(request):
     return df, n_bits
 
 
-@pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)
+@pytest.mark.parametrize(
+    "df_and_discretization_params", range(1, max_bits), indirect=True
+)
 def test_bit_vector_to_int(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
@@ -35,7 +37,9 @@ def test_bit_vector_to_int(df_and_discretization_params):
         assert bit_vector == [int(x) for x in bin(i)[2:].zfill(n_bits)]
 
 
-@pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)
+@pytest.mark.parametrize(
+    "df_and_discretization_params", range(1, max_bits), indirect=True
+)
 def test_bit_vector_to_string(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
@@ -47,7 +51,9 @@ def test_bit_vector_to_string(df_and_discretization_params):
         assert bit_string == bin(i)[2:].zfill(n_bits)
 
 
-@pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)
+@pytest.mark.parametrize(
+    "df_and_discretization_params", range(1, max_bits), indirect=True
+)
 def test_int_to_bit_vector(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
@@ -59,7 +65,9 @@ def test_int_to_bit_vector(df_and_discretization_params):
         assert i == i_recovered
 
 
-@pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)
+@pytest.mark.parametrize(
+    "df_and_discretization_params", range(1, max_bits), indirect=True
+)
 def test_discretize(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
@@ -75,7 +83,9 @@ def test_discretize(df_and_discretization_params):
         assert (x_discrete == np.arange(2**n_bits)).all()
 
 
-@pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)
+@pytest.mark.parametrize(
+    "df_and_discretization_params", range(1, max_bits), indirect=True
+)
 def test_discretizatio_params(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
 
@@ -90,14 +100,18 @@ def test_discretizatio_params(df_and_discretization_params):
 
         assert discretizer.params[column]["n_bits"] == n_bits
         assert (
-            discretizer.params[column]["x_min"] == df[column].min() - epsilon[column]["min"]
+            discretizer.params[column]["x_min"]
+            == df[column].min() - epsilon[column]["min"]
         )
         assert (
-            discretizer.params[column]["x_max"] == df[column].max() + epsilon[column]["max"]
+            discretizer.params[column]["x_max"]
+            == df[column].max() + epsilon[column]["max"]
         )
 
 
-@pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)
+@pytest.mark.parametrize(
+    "df_and_discretization_params", range(1, max_bits), indirect=True
+)
 def test_discretize_df(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
@@ -113,7 +127,9 @@ def test_discretize_df(df_and_discretization_params):
         assert (x_discrete == df_discrete[column]).all()
 
 
-@pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)
+@pytest.mark.parametrize(
+    "df_and_discretization_params", range(1, max_bits), indirect=True
+)
 def test_df_to_bit_array(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
@@ -124,7 +140,9 @@ def test_df_to_bit_array(df_and_discretization_params):
     assert set(np.unique(bit_array)) == set([0, 1])
 
 
-@pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)
+@pytest.mark.parametrize(
+    "df_and_discretization_params", range(1, max_bits), indirect=True
+)
 def test_bit_array_to_df(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
@@ -135,7 +153,9 @@ def test_bit_array_to_df(df_and_discretization_params):
     assert (np.isclose(df_recovered, df)).all()
 
 
-@pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)
+@pytest.mark.parametrize(
+    "df_and_discretization_params", range(1, max_bits), indirect=True
+)
 def test_undiscretize(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)
@@ -150,7 +170,9 @@ def test_undiscretize(df_and_discretization_params):
         assert np.isclose(x_recovered, df[column]).all()
 
 
-@pytest.mark.parametrize("df_and_discretization_params", range(1, max_bits), indirect=True)
+@pytest.mark.parametrize(
+    "df_and_discretization_params", range(1, max_bits), indirect=True
+)
 def test_undiscretize_df(df_and_discretization_params):
     df, n_bits = df_and_discretization_params
     discretizer = Discretizer(df, n_bits)

@@ -61,12 +61,14 @@ class QBMBase(ABC):
 
     def _random_mini_batch_indices(self, mini_batch_size):
         """
-        Generates random, non-intersecting sets of indices for creating mini-batches of the
+        Generates random, non-intersecting sets of indices for creating mini-batches of
+        the
         training data.
 
         :param mini_batch_size: Size of the mini-batches.
 
-        :returns: List of numpy arrays, each array containing the indices corresponding to
+        :returns: List of numpy arrays, each array containing the indices corresponding
+        to
             a mini-batch.
         """
         return np.split(

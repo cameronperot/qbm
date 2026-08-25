@@ -1,9 +1,11 @@
+from collections.abc import Mapping
+
 import numpy as np
 import pandas as pd
 
 
 class Discretizer:
-    def __init__(self, df, n_bits, epsilon={}):
+    def __init__(self, df, n_bits, epsilon: Mapping[str, Mapping[str, float]] = {}):
         """
         :param df: Dataframe of numerical values.
         :param n_bits: Number of bits to discretize to.
@@ -123,7 +125,9 @@ class Discretizer:
             if column.endswith("_bit"):
                 df_discretized[column] = df[column].astype(np.int8)
             else:
-                df_discretized[column] = self.discretize(df[column], **self.params[column])
+                df_discretized[column] = self.discretize(
+                    df[column], **self.params[column]
+                )
 
         return df_discretized
 

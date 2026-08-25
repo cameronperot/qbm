@@ -29,7 +29,9 @@ def df():
         {
             "a": np.linspace(0, 1, n_rows),
             "b": np.linspace(-1, 1, n_rows),
-            "c": np.concatenate([np.zeros(round(n_rows / 2)), np.ones(round(n_rows / 2))]),
+            "c": np.concatenate(
+                [np.zeros(round(n_rows / 2)), np.ones(round(n_rows / 2))]
+            ),
             "d": np.concatenate(
                 [np.zeros(round(n_rows / 3)), np.ones(round(2 * n_rows / 3))]
             ),
@@ -76,10 +78,10 @@ def test_lower_tail_concentration(mock_sum, mock_logical_and):
 
     ltc = lower_tail_concentration(z, U, V)
 
-    assert (mock_logical_and.call_args[0][0] == (U <= z)).all()
-    assert (mock_logical_and.call_args[0][1] == (V <= z)).all()
+    assert (mock_logical_and.call_args[0][0] == (z >= U)).all()
+    assert (mock_logical_and.call_args[0][1] == (z >= V)).all()
     assert mock_sum.call_args_list[0][0][0] == "test_logical_and"
-    assert (mock_sum.call_args_list[1][0][0] == (U <= z)).all()
+    assert (mock_sum.call_args_list[1][0][0] == (z >= U)).all()
     assert ltc == 1
 
 
@@ -95,10 +97,10 @@ def test_upper_tail_concentration(mock_sum, mock_logical_and):
 
     utc = upper_tail_concentration(z, U, V)
 
-    assert (mock_logical_and.call_args[0][0] == (U > 1 - z)).all()
-    assert (mock_logical_and.call_args[0][1] == (V > 1 - z)).all()
+    assert (mock_logical_and.call_args[0][0] == (1 - z < U)).all()
+    assert (mock_logical_and.call_args[0][1] == (1 - z < V)).all()
     assert mock_sum.call_args_list[0][0][0] == "test_logical_and"
-    assert (mock_sum.call_args_list[1][0][0] == (U > 1 - z)).all()
+    assert (mock_sum.call_args_list[1][0][0] == (1 - z < U)).all()
     assert utc == 1
 
 
@@ -127,7 +129,7 @@ def test_filter_df_on_values_drop_filter_columns_True(df):
 def test_get_project_dir_env_not_set(monkeypatch):
     monkeypatch.setattr("qbm.utils.misc.os.getenv", lambda x: None)
 
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="QBM_PROJECT_DIR env var not set"):
         get_project_dir()
 
 
@@ -135,7 +137,7 @@ def test_get_project_dir_path_does_not_exist(monkeypatch):
     monkeypatch.setattr("qbm.utils.misc.os.getenv", lambda x: "/test/path")
     monkeypatch.setattr("qbm.utils.misc.Path.exists", lambda self: False)
 
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="does not exist"):
         get_project_dir()
 
 
@@ -208,7 +210,9 @@ def test_kl_divergence_relative_smooth():
 
     smooth_mask = np.logical_and(p > 0, q == 0)
     q[smooth_mask] = epsilon_smooth * p[smooth_mask]
-    q[np.logical_not(smooth_mask)] -= q[smooth_mask].sum() / (len(q) - smooth_mask.sum())
+    q[np.logical_not(smooth_mask)] -= q[smooth_mask].sum() / (
+        len(q) - smooth_mask.sum()
+    )
 
     support = np.logical_and(p > 0, q > 0)
     p = p[support]
@@ -232,7 +236,9 @@ def test_kl_divergence_smooth():
 
     smooth_mask = np.logical_and(p > 0, q == 0)
     q[smooth_mask] = epsilon_smooth
-    q[np.logical_not(smooth_mask)] -= q[smooth_mask].sum() / (len(q) - smooth_mask.sum())
+    q[np.logical_not(smooth_mask)] -= q[smooth_mask].sum() / (
+        len(q) - smooth_mask.sum()
+    )
 
     support = np.logical_and(p > 0, q > 0)
     p = p[support]
@@ -248,7 +254,7 @@ def test_load_artifact_invalid_file_path(monkeypatch):
 
     file_path = Path("/test/path/file")
 
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="does not exist"):
         load_artifact(file_path)
 
 
@@ -257,7 +263,7 @@ def test_load_artifact_invalid_file_extension(monkeypatch):
 
     file_path = Path("/test/path/file")
 
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="does not exist"):
         load_artifact(file_path)
 
 
@@ -272,7 +278,7 @@ def test_load_artifact_json_success(monkeypatch):
         loaded_artifact = load_artifact(file_path)
 
         assert loaded_artifact == artifact
-        mock_file.assert_called_with(file_path, "r")
+        mock_file.assert_called_with(file_path)
 
 
 def test_load_artifact_pickle_success(monkeypatch):
@@ -300,7 +306,7 @@ def test_load_artifact_json_success_str(monkeypatch):
         loaded_artifact = load_artifact(file_path)
 
         assert loaded_artifact == artifact
-        mock_file.assert_called_with(Path(file_path), "r")
+        mock_file.assert_called_with(Path(file_path))
 
 
 def test_load_artifact_pickle_success_str(monkeypatch):
@@ -317,7 +323,9 @@ def test_load_artifact_pickle_success_str(monkeypatch):
         mock_file.assert_called_with(Path(file_path), "rb")
 
 
-@pytest.mark.parametrize("epoch, decay_epoch, period", [(0, 5, 10), (5, 5, 10), (6, 5, 10)])
+@pytest.mark.parametrize(
+    "epoch, decay_epoch, period", [(0, 5, 10), (5, 5, 10), (6, 5, 10)]
+)
 def test_lr_exp_decay(epoch, decay_epoch, period):
     lr_factor = lr_exp_decay(epoch, decay_epoch, period)
 
@@ -347,7 +355,7 @@ def test_save_artifact_invalid_suffix(monkeypatch):
     file_path = Path("/test/path/file.invalid")
     artifact = {"a": 1, "b": 2}
 
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="Invalid file extension"):
         save_artifact(artifact, file_path)
 
 
