@@ -143,8 +143,12 @@ def compute_kl_divergence(
         raise ValueError("q_data must not be empty")
     if n_bins <= 0:
         raise ValueError(f"n_bins must be positive (got {n_bins})")
-    hist_data, bin_edges = np.histogram(p_data, bins=n_bins)
-    hist_samples, _ = np.histogram(q_data, bins=bin_edges)
+    # Bin over the combined range so that mass in either distribution
+    # outside the other's support is not silently dropped
+    lo = min(p_data.min(), q_data.min())
+    hi = max(p_data.max(), q_data.max())
+    hist_data, _ = np.histogram(p_data, bins=n_bins, range=(lo, hi))
+    hist_samples, _ = np.histogram(q_data, bins=n_bins, range=(lo, hi))
 
     p = hist_data / p_data.shape[0]
     q = hist_samples / q_data.shape[0]
