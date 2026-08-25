@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import pickle
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -95,28 +94,6 @@ def filter_df_on_values(
         df.drop(column_values.keys(), axis=1, inplace=True)
 
     return df
-
-
-def get_project_dir() -> Path:
-    """
-    Gets the project directory path from the environment and checks if it is valid.
-
-    Returns:
-        Path object of the project directory.
-
-    Raises:
-        RuntimeError: If the QBM_PROJECT_DIR env var is not set.
-        FileNotFoundError: If the path does not exist.
-    """
-    dir_path = os.getenv("QBM_PROJECT_DIR")
-    if dir_path is None:
-        raise RuntimeError("QBM_PROJECT_DIR env var not set")
-
-    dir_path = Path(dir_path)
-    if dir_path.exists():
-        return dir_path
-    else:
-        raise FileNotFoundError(f"Path '{dir_path}' does not exist")
 
 
 def get_rng(seed: int | None = None) -> RandomState:

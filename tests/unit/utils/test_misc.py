@@ -12,7 +12,6 @@ from qbm.utils import (
     compute_lr_exp_decay,
     compute_upper_tail_concentration,
     filter_df_on_values,
-    get_project_dir,
     get_rng,
     load_artifact,
     save_artifact,
@@ -126,32 +125,6 @@ def test_filter_df_on_values_drop_filter_columns_True(df: pd.DataFrame) -> None:
     assert "c" not in df_filtered.columns
     assert "d" not in df_filtered.columns
     assert df_filtered.shape[0] == round(df.shape[0] * (1 / 2 - 1 / 3))
-
-
-def test_get_project_dir_env_not_set_raises_runtime_error(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.delenv("QBM_PROJECT_DIR", raising=False)
-
-    with pytest.raises(RuntimeError, match="QBM_PROJECT_DIR env var not set"):
-        get_project_dir()
-
-
-def test_get_project_dir_nonexistent_path_raises_file_not_found(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
-    monkeypatch.setenv("QBM_PROJECT_DIR", str(tmp_path / "does_not_exist"))
-
-    with pytest.raises(FileNotFoundError, match="does not exist"):
-        get_project_dir()
-
-
-def test_get_project_dir_existing_path_returns_path(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
-    monkeypatch.setenv("QBM_PROJECT_DIR", str(tmp_path))
-
-    assert get_project_dir() == tmp_path
 
 
 def test_get_rng_same_seed_returns_identical_draw_sequences() -> None:

@@ -342,7 +342,6 @@ TSWLatexianTemp*
 # generated if using elsarticle.cls
 *.spl
 
-docs/_build/
 
 # Build artifacts
 build/
@@ -358,3 +357,6 @@ build/
 *.py[oc]
 
 specs/
+
+# MkDocs build output
+site/
