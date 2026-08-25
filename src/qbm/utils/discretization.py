@@ -1,11 +1,27 @@
-from collections.abc import Mapping
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from typing import NotRequired, TypedDict
 
 import numpy as np
 import pandas as pd
 
 
+class ColumnParams(TypedDict):
+    """Per-column discretization parameters."""
+
+    n_bits: int
+    x_min: NotRequired[float]
+    x_max: NotRequired[float]
+
+
 class Discretizer:
-    def __init__(self, df, n_bits, epsilon: Mapping[str, Mapping[str, float]] = {}):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        n_bits: int,
+        epsilon: Mapping[str, Mapping[str, float]] = {},
+    ) -> None:
         """
         :param df: Dataframe of numerical values.
         :param n_bits: Number of bits to discretize to.
@@ -14,7 +30,7 @@ class Discretizer:
         self.columns = df.columns
         self.n_bits = n_bits
         self.epsilon = epsilon
-        self.params = {}
+        self.params: dict[str, ColumnParams] = {}
         self.split_indices = []
         self.n_bits_total = 0
 
@@ -42,7 +58,7 @@ class Discretizer:
             self.n_bits_total += self.params[column]["n_bits"]
 
     @staticmethod
-    def bit_vector_to_int(bit_vector):
+    def bit_vector_to_int(bit_vector: Sequence[int] | np.ndarray) -> int:
         """
         Converts a bit vector to a bit string.
 
@@ -53,7 +69,7 @@ class Discretizer:
         return int("".join(str(x) for x in bit_vector), 2)
 
     @staticmethod
-    def bit_vector_to_string(bit_vector):
+    def bit_vector_to_string(bit_vector: Sequence[int]) -> str:
         """
         Converts a bit vector to a bit string.
 
@@ -64,7 +80,7 @@ class Discretizer:
         return "".join(str(x) for x in bit_vector)
 
     @staticmethod
-    def int_to_bit_vector(x, n_bits):
+    def int_to_bit_vector(x: int, n_bits: int) -> list[int]:
         """
         Converts the integer x to an n_bits-bit bit vector.
 
@@ -77,7 +93,7 @@ class Discretizer:
 
     @staticmethod
     @np.vectorize
-    def discretize(x, n_bits, x_min, x_max):
+    def discretize(x: float, n_bits: int, x_min: float, x_max: float) -> int:
         """
         Convert the value x into a n-bit bit string.
 
@@ -92,11 +108,12 @@ class Discretizer:
 
         x = round((x - x_min) * scaling_factor)
         assert x >= 0 and x <= 2**n_bits - 1
+        assert isinstance(x, int)
         return x
 
     @staticmethod
     @np.vectorize
-    def undiscretize(x, n_bits, x_min, x_max):
+    def undiscretize(x: float, n_bits: int, x_min: float, x_max: float) -> float:
         """
         Convert the value x into a float from a n-bit bit string.
 
@@ -112,7 +129,7 @@ class Discretizer:
         assert x < 2**n_bits
         return x / scaling_factor + x_min
 
-    def discretize_df(self, df):
+    def discretize_df(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Convert all columns of a dataframe to bit representation.
 
@@ -131,7 +148,7 @@ class Discretizer:
 
         return df_discretized
 
-    def undiscretize_df(self, df):
+    def undiscretize_df(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Convert all columns of a dataframe to floats from bit representation.
 
@@ -150,7 +167,7 @@ class Discretizer:
 
         return df_undiscretized
 
-    def df_to_bit_array(self, df):
+    def df_to_bit_array(self, df: pd.DataFrame) -> np.ndarray:
         """
         Converts a dataframe of floats to a bit array.
 
@@ -175,7 +192,7 @@ class Discretizer:
 
         return bit_array
 
-    def bit_array_to_df(self, bit_array):
+    def bit_array_to_df(self, bit_array: np.ndarray) -> pd.DataFrame:
         """
         Converts bit array a dataframe of floats.
 

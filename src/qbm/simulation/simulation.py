@@ -1,13 +1,18 @@
+from __future__ import annotations
+
+from typing import Any
+
 import numpy as np
 from scipy.linalg import eigh
-from scipy.sparse import csr_matrix, diags, identity, kron
+from scipy.sparse import csr_matrix, diags, identity, kron, spmatrix
 
+type PauliKron = dict[tuple[str, int] | tuple[str, int, int], spmatrix | np.ndarray]
 # set constants
 sparse_X = csr_matrix(([1, 1], ([0, 1], [1, 0])), dtype=np.float64)
 sparse_Z = csr_matrix(([1, -1], ([0, 1], [0, 1])), dtype=np.float64)
 
 
-def get_pauli_kron(n_visible, n_hidden):
+def get_pauli_kron(n_visible: int, n_hidden: int) -> PauliKron:
     """
     Computes the necessary Pauli Kronecker product (sparse) matrices for a n_visible +
     n_hidden qubit problem. Used as an argument to compute_H, e.g. one would instantiate
@@ -35,7 +40,7 @@ def get_pauli_kron(n_visible, n_hidden):
     return pauli_kron
 
 
-def sparse_kron(i, n_qubits, A):
+def sparse_kron(i: int, n_qubits: int, A: spmatrix) -> Any:
     """
     Compute I_{2^i} ⊗ A ⊗ I_{2^(n_qubits-i-1)}.
 
@@ -53,7 +58,14 @@ def sparse_kron(i, n_qubits, A):
         return kron(identity(2 ** (n_qubits - 1)), A)
 
 
-def compute_H(h, J, A, B, n_qubits, pauli_kron):
+def compute_H(
+    h: np.ndarray,
+    J: np.ndarray,
+    A: float,
+    B: float,
+    n_qubits: int,
+    pauli_kron: PauliKron,
+) -> np.ndarray:
     """
     Computes the Hamiltonian of the annealer at relative time s.
 
@@ -90,7 +102,7 @@ def compute_H(h, J, A, B, n_qubits, pauli_kron):
     return (H + diags(H_diag, format="csr")).toarray()
 
 
-def compute_rho(H, beta, diagonal=False):
+def compute_rho(H: np.ndarray, beta: float, diagonal: bool = False) -> np.ndarray:
     """
     Computes the trace normalized density matrix rho.
 

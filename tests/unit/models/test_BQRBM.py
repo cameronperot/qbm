@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,14 +14,14 @@ n_qubits = n_visible + n_hidden
 learning_rate = 1e-3
 
 
-def mock_initialize_annealer(model):
+def mock_initialize_annealer(model: Any) -> None:
     model.qpu = None
     model.h_range = np.array([-4, 4])
     model.J_range = np.array([-1, 1])
 
 
 @pytest.fixture
-def model_simulation(monkeypatch):
+def model_simulation(monkeypatch: Any) -> BQRBM:
     monkeypatch.setattr(
         "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
     )
@@ -44,7 +46,7 @@ def model_simulation(monkeypatch):
 
 
 @pytest.fixture
-def model_annealer(monkeypatch):
+def model_annealer(monkeypatch: Any) -> BQRBM:
     monkeypatch.setattr(
         "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
     )
@@ -68,7 +70,7 @@ def model_annealer(monkeypatch):
     return model
 
 
-def test_init_simultor(monkeypatch):
+def test_init_simultor(monkeypatch: Any) -> None:
     monkeypatch.setattr(
         "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
     )
@@ -111,7 +113,7 @@ def test_init_simultor(monkeypatch):
     assert not hasattr(model, "annealer_params")
 
 
-def test_init_simultor_bad_params(monkeypatch):
+def test_init_simultor_bad_params(monkeypatch: Any) -> None:
     monkeypatch.setattr(
         "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
     )
@@ -141,7 +143,7 @@ def test_init_simultor_bad_params(monkeypatch):
         )
 
 
-def test_init_simultor_annealer_both_fail(monkeypatch):
+def test_init_simultor_annealer_both_fail(monkeypatch: Any) -> None:
     monkeypatch.setattr(
         "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
     )
@@ -169,7 +171,7 @@ def test_init_simultor_annealer_both_fail(monkeypatch):
         )
 
 
-def test_init_simultor_annealer_none_fail(monkeypatch):
+def test_init_simultor_annealer_none_fail(monkeypatch: Any) -> None:
     monkeypatch.setattr(
         "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
     )
@@ -193,7 +195,7 @@ def test_init_simultor_annealer_none_fail(monkeypatch):
         )
 
 
-def test_init_annealer(monkeypatch):
+def test_init_annealer(monkeypatch: Any) -> None:
     monkeypatch.setattr(
         "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
     )
@@ -236,7 +238,7 @@ def test_init_annealer(monkeypatch):
     assert hasattr(model, "annealer_params")
 
 
-def test_init_annealer_bad_params(monkeypatch):
+def test_init_annealer_bad_params(monkeypatch: Any) -> None:
     monkeypatch.setattr(
         "qbm.models.BQRBM._initialize_annealer", mock_initialize_annealer
     )
@@ -266,7 +268,7 @@ def test_init_annealer_bad_params(monkeypatch):
         )
 
 
-def test_sample_annealer(monkeypatch, model_annealer):
+def test_sample_annealer(monkeypatch: Any, model_annealer: BQRBM) -> None:
     monkeypatch.setattr(
         "qbm.models.BQRBM._sample_annealer",
         lambda self, n_samples, answer_mode, use_gauge, binary: "test",
@@ -277,7 +279,7 @@ def test_sample_annealer(monkeypatch, model_annealer):
     assert model.sample(10) == "test"
 
 
-def test_sample_simulation(monkeypatch, model_simulation):
+def test_sample_simulation(monkeypatch: Any, model_simulation: BQRBM) -> None:
     monkeypatch.setattr(
         "qbm.models.BQRBM._sample_simulation",
         lambda self, n_samples, binary: "test",
@@ -288,7 +290,7 @@ def test_sample_simulation(monkeypatch, model_simulation):
     assert model.sample(10) == "test"
 
 
-def test__mean_classical_energy(model_simulation):
+def test__mean_classical_energy(model_simulation: BQRBM) -> None:
     rng = get_rng(0)
     V = rng.rand(n_samples, n_visible)
     H = rng.rand(n_samples, n_hidden)
@@ -308,7 +310,7 @@ def test__mean_classical_energy(model_simulation):
     assert np.isclose(E, E_model_simulation)
 
 
-def test__compute_positive_grads(model_simulation):
+def test__compute_positive_grads(model_simulation: BQRBM) -> None:
     rng = get_rng(0)
     V_pos = rng.rand(n_samples, n_visible)
     Γ = model_simulation.beta * model_simulation.A_freeze
@@ -333,7 +335,7 @@ def test__compute_positive_grads(model_simulation):
         assert np.isclose(grad, model_simulation.grads[grad_name]).all()
 
 
-def test__compute_negative_grads(monkeypatch, model_simulation):
+def test__compute_negative_grads(monkeypatch: Any, model_simulation: BQRBM) -> None:
     rng = get_rng(0)
     state_vectors = rng.rand(n_samples, n_qubits)
     V_neg = state_vectors[:, :n_visible]
@@ -360,7 +362,7 @@ def test__compute_negative_grads(monkeypatch, model_simulation):
         assert np.isclose(grad, model_simulation.grads[grad_name]).all()
 
 
-def test__update_beta(monkeypatch, model_simulation):
+def test__update_beta(monkeypatch: Any, model_simulation: BQRBM) -> None:
     rng = get_rng(0)
     state_vectors = rng.rand(n_samples, n_qubits)
     monkeypatch.setattr(
@@ -386,6 +388,9 @@ def test__update_beta(monkeypatch, model_simulation):
     Δbeta = learning_rate * (E_train - E_model_simulation)
 
     model_simulation.learning_rate_beta = learning_rate
-    model_simulation._update_beta({"state_vectors": state_vectors})
+    samples: Any = {"state_vectors": state_vectors}
+    model_simulation._update_beta(samples)
 
-    assert model_simulation.beta == np.clip(beta + Δbeta, *model_simulation.beta_range)
+    assert model_simulation.beta == np.clip(
+        beta + Δbeta, model_simulation.beta_range[0], model_simulation.beta_range[1]
+    )
