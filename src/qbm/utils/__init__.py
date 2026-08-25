@@ -1,31 +1,31 @@
 from .discretization import Discretizer
 from .misc import (
-    df_ensemble_stats,
-    df_stats,
+    compute_df_ensemble_stats,
+    compute_df_stats,
+    compute_kl_divergence,
+    compute_lower_tail_concentration,
+    compute_lr_exp_decay,
+    compute_upper_tail_concentration,
     filter_df_on_values,
     get_project_dir,
     get_rng,
-    kl_divergence,
     load_artifact,
-    lower_tail_concentration,
-    lr_exp_decay,
     save_artifact,
-    upper_tail_concentration,
 )
 from .transformations import PowerTransformer
 
 __all__ = [
     "Discretizer",
     "PowerTransformer",
-    "df_ensemble_stats",
-    "df_stats",
+    "compute_df_ensemble_stats",
+    "compute_df_stats",
+    "compute_kl_divergence",
+    "compute_lower_tail_concentration",
+    "compute_lr_exp_decay",
+    "compute_upper_tail_concentration",
     "filter_df_on_values",
     "get_project_dir",
     "get_rng",
-    "kl_divergence",
     "load_artifact",
-    "lower_tail_concentration",
-    "lr_exp_decay",
     "save_artifact",
-    "upper_tail_concentration",
 ]

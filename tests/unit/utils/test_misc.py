@@ -8,17 +8,17 @@ import pandas as pd
 import pytest
 
 from qbm.utils import (
-    df_ensemble_stats,
-    df_stats,
+    compute_df_ensemble_stats,
+    compute_df_stats,
+    compute_kl_divergence,
+    compute_lower_tail_concentration,
+    compute_lr_exp_decay,
+    compute_upper_tail_concentration,
     filter_df_on_values,
     get_project_dir,
     get_rng,
-    kl_divergence,
     load_artifact,
-    lower_tail_concentration,
-    lr_exp_decay,
     save_artifact,
-    upper_tail_concentration,
 )
 
 
@@ -39,17 +39,17 @@ def df():
     )
 
 
-def test_df_ensemble_stats(monkeypatch):
+def test_compute_df_ensemble_stats(monkeypatch):
     df = pd.DataFrame.from_dict(np.arange(6).reshape((3, 2))).astype(np.float64)
 
-    ensemble_stats = df_ensemble_stats([df, df])
+    ensemble_stats = compute_df_ensemble_stats([df, df])
 
     assert ensemble_stats["means"].equals(df)
     assert ensemble_stats["medians"].equals(df)
     assert ensemble_stats["stds"].equals(pd.DataFrame(np.zeros((3, 2))))
 
 
-def test_df_stats(monkeypatch):
+def test_compute_df_stats(monkeypatch):
     monkeypatch.setattr("qbm.utils.misc.pd.DataFrame.min", lambda self: 1)
     monkeypatch.setattr("qbm.utils.misc.pd.DataFrame.max", lambda self: 2)
     monkeypatch.setattr("qbm.utils.misc.pd.DataFrame.mean", lambda self: 3)
@@ -61,14 +61,14 @@ def test_df_stats(monkeypatch):
         {"min": 1, "max": 2, "mean": 3, "median": 4, "std": 5}, orient="index"
     )
 
-    stats = df_stats(df)
+    stats = compute_df_stats(df)
 
     assert stats.equals(expected_df)
 
 
 @patch("qbm.utils.misc.np.logical_and")
 @patch("qbm.utils.misc.np.sum")
-def test_lower_tail_concentration(mock_sum, mock_logical_and):
+def test_compute_lower_tail_concentration(mock_sum, mock_logical_and):
     mock_sum.return_value = 123
     mock_logical_and.return_value = "test_logical_and"
 
@@ -76,7 +76,7 @@ def test_lower_tail_concentration(mock_sum, mock_logical_and):
     U = np.linspace(0, 0.9, 100)
     V = np.linspace(0, 1, 100)
 
-    ltc = lower_tail_concentration(z, U, V)
+    ltc = compute_lower_tail_concentration(z, U, V)
 
     assert (mock_logical_and.call_args[0][0] == (z >= U)).all()
     assert (mock_logical_and.call_args[0][1] == (z >= V)).all()
@@ -87,7 +87,7 @@ def test_lower_tail_concentration(mock_sum, mock_logical_and):
 
 @patch("qbm.utils.misc.np.logical_and")
 @patch("qbm.utils.misc.np.sum")
-def test_upper_tail_concentration(mock_sum, mock_logical_and):
+def test_compute_upper_tail_concentration(mock_sum, mock_logical_and):
     mock_sum.return_value = 123
     mock_logical_and.return_value = "test_logical_and"
 
@@ -95,7 +95,7 @@ def test_upper_tail_concentration(mock_sum, mock_logical_and):
     U = np.linspace(0, 0.9, 100)
     V = np.linspace(0, 1, 100)
 
-    utc = upper_tail_concentration(z, U, V)
+    utc = compute_upper_tail_concentration(z, U, V)
 
     assert (mock_logical_and.call_args[0][0] == (1 - z < U)).all()
     assert (mock_logical_and.call_args[0][1] == (1 - z < V)).all()
@@ -166,7 +166,7 @@ def test_get_rng(mock_RandomState, mock_MT19937, mock_SeedSequence):
     assert rng == "test_RandomState"
 
 
-def test_kl_divergence():
+def test_compute_kl_divergence():
     n_bins = 32
     p_data = np.linspace(-10, 10, 1000)
     q_data = np.linspace(-1, 1, 1000)
@@ -180,24 +180,24 @@ def test_kl_divergence():
     p = p[support]
     q = q[support]
 
-    assert kl_divergence(p_data, q_data) == np.sum(p * np.log(p / q))
+    assert compute_kl_divergence(p_data, q_data) == np.sum(p * np.log(p / q))
 
 
-def test_kl_divergence_zero():
+def test_compute_kl_divergence_zero():
     p_data = np.linspace(-10, 10, 1000)
     q_data = np.linspace(-10, 10, 1000)
 
-    assert kl_divergence(p_data, q_data) == 0
+    assert compute_kl_divergence(p_data, q_data) == 0
 
 
-def test_kl_divergence_nonzero():
+def test_compute_kl_divergence_nonzero():
     p_data = np.linspace(-10, 10, 1000)
     q_data = np.linspace(-1, 1, 1000)
 
-    assert kl_divergence(p_data, q_data) != 0
+    assert compute_kl_divergence(p_data, q_data) != 0
 
 
-def test_kl_divergence_relative_smooth():
+def test_compute_kl_divergence_relative_smooth():
     n_bins = 32
     epsilon_smooth = 1e-3
     p_data = np.linspace(-10, 10, 1000)
@@ -218,12 +218,12 @@ def test_kl_divergence_relative_smooth():
     p = p[support]
     q = q[support]
 
-    assert kl_divergence(
+    assert compute_kl_divergence(
         p_data, q_data, epsilon_smooth=epsilon_smooth, relative_smooth=True
     ) == np.sum(p * np.log(p / q))
 
 
-def test_kl_divergence_smooth():
+def test_compute_kl_divergence_smooth():
     n_bins = 32
     epsilon_smooth = 1e-3
     p_data = np.linspace(-10, 10, 1000)
@@ -244,9 +244,8 @@ def test_kl_divergence_smooth():
     p = p[support]
     q = q[support]
 
-    assert kl_divergence(p_data, q_data, epsilon_smooth=epsilon_smooth) == np.sum(
-        p * np.log(p / q)
-    )
+    result = compute_kl_divergence(p_data, q_data, epsilon_smooth=epsilon_smooth)
+    assert result == np.sum(p * np.log(p / q))
 
 
 def test_load_artifact_invalid_file_path(monkeypatch):
@@ -326,8 +325,8 @@ def test_load_artifact_pickle_success_str(monkeypatch):
 @pytest.mark.parametrize(
     "epoch, decay_epoch, period", [(0, 5, 10), (5, 5, 10), (6, 5, 10)]
 )
-def test_lr_exp_decay(epoch, decay_epoch, period):
-    lr_factor = lr_exp_decay(epoch, decay_epoch, period)
+def test_compute_lr_exp_decay(epoch, decay_epoch, period):
+    lr_factor = compute_lr_exp_decay(epoch, decay_epoch, period)
 
     if epoch <= decay_epoch:
         assert lr_factor == 1
