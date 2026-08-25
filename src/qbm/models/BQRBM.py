@@ -403,6 +403,7 @@ class BQRBM(QBMBase):
         instantiation.
         """
         self.qpu = DWaveSampler(**self.annealer_params.get("qpu_params", {}))
+        self.qpu.validate_anneal_schedule(self.annealer_params["schedule"])
         self.sampler = FixedEmbeddingComposite(
             self.qpu, self.annealer_params["embedding"]
         )
