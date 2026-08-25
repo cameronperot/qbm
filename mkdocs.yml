@@ -1,0 +1,58 @@
+site_name: Quantum Boltzmann Machines
+site_description: A Python package for training and analyzing quantum Boltzmann machines
+site_url: https://cameronperot.github.io/qbm/
+repo_url: https://github.com/cameronperot/qbm
+repo_name: cameronperot/qbm
+
+nav:
+  - Home: index.md
+  - Getting Started: getting_started.md
+  - Theory: theory.md
+  - User Guide:
+      - Annealer: guides/annealer.md
+      - Utilities: guides/utils.md
+  - Example: example/qbm_example.ipynb
+  - API Reference:
+      - Models: api/models.md
+      - Simulation: api/simulation.md
+      - Utils: api/utils.md
+
+theme:
+  name: material
+  features:
+      - content.code.copy
+      - navigation.sections
+  palette:
+      - media: "(prefers-color-scheme: light)"
+        scheme: default
+        toggle:
+            icon: material/brightness-7
+            name: Switch to dark mode
+      - media: "(prefers-color-scheme: dark)"
+        scheme: slate
+        toggle:
+            icon: material/brightness-4
+            name: Switch to light mode
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+        generic: true
+  - pymdownx.highlight:
+        anchor_linenums: true
+  - pymdownx.superfences
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+plugins:
+  - include-markdown
+  - search
+  - mkdocs-jupyter:
+      execute: false
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: true

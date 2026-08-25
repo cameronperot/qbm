@@ -342,4 +342,21 @@ TSWLatexianTemp*
 # generated if using elsarticle.cls
 *.spl
 
-docs/_build/
+
+# Build artifacts
+build/
+
+# Tooling caches
+.ruff_cache/
+
+# Editors
+.idea/
+.vscode/
+
+# Compiled bytecode
+*.py[oc]
+
+specs/
+
+# MkDocs build output
+site/

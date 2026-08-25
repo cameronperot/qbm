@@ -1,25 +1,39 @@
+from typing import Any
+
 import numpy as np
 from scipy.linalg import eigh
-from scipy.sparse import csr_matrix, diags, identity, kron
+from scipy.sparse import csr_matrix, diags, identity, kron, spmatrix
 
-# set constants
+type PauliKron = dict[tuple[str, int] | tuple[str, int, int], spmatrix | np.ndarray]
+# Set constants
 sparse_X = csr_matrix(([1, 1], ([0, 1], [1, 0])), dtype=np.float64)
 sparse_Z = csr_matrix(([1, -1], ([0, 1], [0, 1])), dtype=np.float64)
 
 
-def get_pauli_kron(n_visible, n_hidden):
+def get_pauli_kron(n_visible: int, n_hidden: int) -> PauliKron:
     """
-    Computes the necessary Pauli Kronecker product (sparse) matrices for a n_visible +
-    n_hidden qubit problem. Used as an argument to compute_H, e.g. one would instantiate
-    pauli_kron as pauli_kron = get_pauli_kron(n_visible, n_hidden), then pass to compute_H
-    when computing the Hamiltonian.
+    Computes the necessary Pauli Kronecker product (sparse) matrices for a n_visible
+    + n_hidden qubit problem. Used as an argument to compute_H, e.g. one would
+    instantiate pauli_kron as pauli_kron = get_pauli_kron(n_visible, n_hidden), then
+    pass to compute_H when computing the Hamiltonian.
 
-    :param n_visible: Number of visible units.
-    :param n_hidden: Number of hidden units.
+    Args:
+        n_visible: Number of visible units.
+        n_hidden: Number of hidden units.
 
-    :returns: A dictionary of Kronecker product Pauli matrices.
+    Returns:
+        Dictionary of Kronecker product Pauli terms, with keys ("x", i) mapping to
+        sparse matrices I ⊗ σ_x^(i) ⊗ I, and keys ("z_diag", i) and ("zz_diag", i, j)
+        mapping to the diagonals of I ⊗ σ_z^(i) ⊗ I and their pairwise products.
+
+    Raises:
+        ValueError: If n_visible or n_hidden is not positive.
     """
-    # set Kronecker product Pauli matrices
+    if n_visible <= 0:
+        raise ValueError(f"n_visible must be positive (got {n_visible})")
+    if n_hidden <= 0:
+        raise ValueError(f"n_hidden must be positive (got {n_hidden})")
+    # Set Kronecker product Pauli matrices
     n_qubits = n_visible + n_hidden
     pauli_kron = {}
     for i in range(n_qubits):
@@ -27,20 +41,24 @@ def get_pauli_kron(n_visible, n_hidden):
         pauli_kron["z_diag", i] = sparse_kron(i, n_qubits, sparse_Z).diagonal()
     for i in range(n_qubits):
         for j in range(i + 1, n_qubits):
-            pauli_kron["zz_diag", i, j] = pauli_kron["z_diag", i] * pauli_kron["z_diag", j]
+            pauli_kron["zz_diag", i, j] = (
+                pauli_kron["z_diag", i] * pauli_kron["z_diag", j]
+            )
 
     return pauli_kron
 
 
-def sparse_kron(i, n_qubits, A):
+def sparse_kron(i: int, n_qubits: int, A: spmatrix) -> Any:
     """
     Compute I_{2^i} ⊗ A ⊗ I_{2^(n_qubits-i-1)}.
 
-    :param i: Index of the "A" matrix.
-    :param n_qubits: Total number of qubits.
-    :param A: Matrix to tensor with identities.
+    Args:
+        i: Index of the "A" matrix.
+        n_qubits: Total number of qubits.
+        A: Matrix to tensor with identities.
 
-    :returns: I_{2^i} ⊗ A ⊗ I_{2^(n_qubits-i-1)}.
+    Returns:
+        I_{2^i} ⊗ A ⊗ I_{2^(n_qubits-i-1)}.
     """
     if i != 0 and i != n_qubits - 1:
         return kron(kron(identity(2**i), A), identity(2 ** (n_qubits - i - 1)))
@@ -50,36 +68,52 @@ def sparse_kron(i, n_qubits, A):
         return kron(identity(2 ** (n_qubits - 1)), A)
 
 
-def compute_H(h, J, A, B, n_qubits, pauli_kron):
+def compute_H(
+    h: np.ndarray,
+    J: np.ndarray,
+    A: float,
+    B: float,
+    n_qubits: int,
+    pauli_kron: PauliKron,
+) -> np.ndarray:
     """
     Computes the Hamiltonian of the annealer at relative time s.
 
-    :param h: Linear Ising terms.
-    :param J: Quadratic Ising terms.
-    :param A: Coefficient of the off-diagonal terms, e.g. A(s).
-    :param B: Coefficient of the diagonal terms, e.g. B(s).
-    :param n_qubits: Number of qubits.
-    :param pauli_kron: Kronecker product Pauli matrices dict.
+    Args:
+        h: Linear Ising terms.
+        J: Quadratic Ising terms.
+        A: Coefficient of the off-diagonal terms, e.g. A(s).
+        B: Coefficient of the diagonal terms, e.g. B(s).
+        n_qubits: Number of qubits.
+        pauli_kron: Kronecker product Pauli matrices dict.
 
-    :returns: Hamiltonian matrix H.
+    Returns:
+        Hamiltonian matrix H.
+
+    Raises:
+        ValueError: If the length of h or the shape of J does not match n_qubits.
     """
-    # diagonal terms
+    if len(h) != n_qubits:
+        raise ValueError(f"h has length {len(h)}, expected n_qubits = {n_qubits}")
+    if J.shape != (n_qubits, n_qubits):
+        raise ValueError(f"J has shape {J.shape}, expected ({n_qubits}, {n_qubits})")
+    # Diagonal terms
     H_diag = np.zeros(2**n_qubits)
     for i in range(n_qubits):
-        # linear terms
+        # Linear terms
         if h[i] != 0:
             H_diag += (B * h[i]) * pauli_kron["z_diag", i]
 
-        # quadratic terms
+        # Quadratic terms
         for j in range(i + 1, n_qubits):
             if J[i, j] != 0:
                 H_diag += (B * J[i, j]) * pauli_kron["zz_diag", i, j]
 
-    # return just the diagonal if H is a diagonal matrix
+    # Return just the diagonal if H is a diagonal matrix
     if A == 0:
         return np.diag(H_diag)
 
-    # off-diagonal terms
+    # Off-diagonal terms
     H = csr_matrix((2**n_qubits, 2**n_qubits), dtype=np.float64)
     for i in range(n_qubits):
         H -= A * pauli_kron["x", i]
@@ -87,17 +121,26 @@ def compute_H(h, J, A, B, n_qubits, pauli_kron):
     return (H + diags(H_diag, format="csr")).toarray()
 
 
-def compute_rho(H, beta, diagonal=False):
+def compute_rho(H: np.ndarray, beta: float, diagonal: bool = False) -> np.ndarray:
     """
     Computes the trace normalized density matrix rho.
 
-    :param H: Hamiltonian matrix.
-    :param beta: Inverse temperature beta = 1 / (k_B * T).
-    :param diagonal: Flag to indicate whether H is a diagonal matrix or not.
+    Args:
+        H: Hamiltonian matrix.
+        beta: Inverse temperature beta = 1 / (k_B * T).
+        diagonal: Flag to indicate whether H is a diagonal matrix or not.
 
-    :return: Density matrix rho.
+    Returns:
+        Density matrix rho.
+
+    Raises:
+        ValueError: If H is not a square matrix or if beta is not positive.
     """
-    # if diagonal then compute directly, else use eigen decomposition
+    if H.ndim != 2 or H.shape[0] != H.shape[1]:
+        raise ValueError(f"H must be a square matrix (got shape {H.shape})")
+    if beta <= 0:
+        raise ValueError(f"beta must be positive (got {beta})")
+    # If diagonal then compute directly, else use eigen decomposition
     if diagonal:
         Lambda = H.diagonal()
         exp_beta_Lambda = np.exp(-beta * (Lambda - Lambda.min()))

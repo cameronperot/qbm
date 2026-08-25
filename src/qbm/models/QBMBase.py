@@ -13,11 +13,17 @@ class QBMBase(ABC):
     https://journals.aps.org/prx/abstract/10.1103/PhysRevX.8.021050
     """
 
-    def __init__(self, V_train, n_hidden, seed):
+    b: np.ndarray
+    W: np.ndarray
+
+    def __init__(self, V_train: np.ndarray, n_hidden: int, seed: int | None) -> None:
         """
-        :param V_train: Training data.
-        :param n_hidden: Number of hidden units.
-        :param seed: Seed for the random number generator.
+        Initializes the model.
+
+        Args:
+            V_train: Training data.
+            n_hidden: Number of hidden units.
+            seed: Seed for the random number generator.
         """
         self.V_train = V_train
         self.n_visible = V_train.shape[1]
@@ -25,48 +31,56 @@ class QBMBase(ABC):
         self.n_qubits = self.n_visible + self.n_hidden
         self.seed = seed
         self.rng = get_rng(self.seed)
-        self.grads = {}
+        self.grads: dict[str, np.ndarray] = {}
 
         self._initialize_weights_and_biases()
 
-    def _apply_grads(self, learning_rate):
+    def _apply_grads(self, learning_rate: float) -> None:
         """
         Applies the gradients from the positive and negative phases using the provided
         learning rate.
 
-        :param learning_rate: Learning rate to scale the gradients with.
+        Args:
+            learning_rate: Learning rate to scale the gradients with.
         """
         self.b += learning_rate * (self.grads["b_pos"] - self.grads["b_neg"])
         self.W += learning_rate * (self.grads["W_pos"] - self.grads["W_neg"])
 
-    def _binary_to_eigen(self, x):
+    def _binary_to_eigen(self, x: np.ndarray) -> np.ndarray:
         """
         Convert bit values {0, 1} to corresponding spin values {+1, -1}.
 
-        :param x: Input array of values {0, 1}.
+        Args:
+            x: Input array of values {0, 1}.
 
-        :returns: Output array of values {+1, -1}.
+        Returns:
+            Output array of values {+1, -1}.
         """
         return (1 - 2 * x).astype(np.int8)
 
-    def _eigen_to_binary(self, x):
+    def _eigen_to_binary(self, x: np.ndarray) -> np.ndarray:
         """
         Convert spin values {+1, -1} to corresponding bit values {0, 1}.
 
-        :param x: Input array of values {+1, -1}.
+        Args:
+            x: Input array of values {+1, -1}.
 
-        :returns: Output array of values {0, 1}.
+        Returns:
+            Output array of values {0, 1}.
         """
         return ((1 - x) / 2).astype(np.int8)
 
-    def _random_mini_batch_indices(self, mini_batch_size):
+    def _random_mini_batch_indices(self, mini_batch_size: int) -> list[np.ndarray]:
         """
-        Generates random, non-intersecting sets of indices for creating mini-batches of the
-        training data.
+        Generates random, non-intersecting sets of indices for creating mini-batches
+        of the training data. The final mini-batch may be smaller than
+        mini_batch_size if the training set size is not divisible by it.
 
-        :param mini_batch_size: Size of the mini-batches.
+        Args:
+            mini_batch_size: Size of the mini-batches.
 
-        :returns: List of numpy arrays, each array containing the indices corresponding to
+        Returns:
+            List of numpy arrays, each array containing the indices corresponding to
             a mini-batch.
         """
         return np.split(
@@ -75,13 +89,13 @@ class QBMBase(ABC):
         )
 
     @abstractmethod
-    def _compute_positive_grads(self):
+    def _compute_positive_grads(self, V_pos: np.ndarray) -> None:
         pass
 
     @abstractmethod
-    def _compute_negative_grads(self):
+    def _compute_negative_grads(self, n_samples: int) -> None:
         pass
 
     @abstractmethod
-    def _initialize_weights_and_biases(self):
+    def _initialize_weights_and_biases(self, mu: float = 0, sigma: float = 0.1) -> None:
         pass
