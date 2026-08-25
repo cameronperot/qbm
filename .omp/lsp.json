@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "ty": {
+      "command": "/work/programming/projects/qbm/.venv/bin/ty",
+      "fileTypes": [".py"],
+      "rootMarkers": ["pyproject.toml", ".git"],
+      "args": ["server"]
+    }
+  }
+}

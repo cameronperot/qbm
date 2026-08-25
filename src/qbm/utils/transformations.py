@@ -8,7 +8,7 @@ import pandas as pd
 
 class PowerTransformer:
     """
-    Transforms data points that lie beyond the provided threshold by a taking their
+    Transforms data points that lie beyond the provided threshold by taking their
     power (<1) to scale them closer to the mean.
     """
 
@@ -20,12 +20,15 @@ class PowerTransformer:
         columns: Sequence[Hashable] | None = None,
     ) -> None:
         """
-        :param df: Dataframe of data to scale.
-        :param threshold: Number of standard deviations above the mean at which to begin
-            the scaling.
-        :param power: Power at which to scale the outlier.
-        :param columns: Optional list of columns to apply the transformation to. If no
-            columns are provided, then all columns are transformed.
+        Initializes the transformer.
+
+        Args:
+            df: Dataframe of data to scale.
+            threshold: Number of standard deviations from the mean beyond which to
+                begin the scaling (applied to both tails).
+            power: Power at which to scale the outlier.
+            columns: Optional list of columns to apply the transformation to. If no
+                columns are provided, then all columns are transformed.
         """
         assert power < 1
         assert threshold >= 1
@@ -48,11 +51,13 @@ class PowerTransformer:
         """
         Transforms the data to the scaled space.
 
-        :param df: Dataframe to scale.
-        :param inplace: If True then it operates on the same dataframe, if False then
-            it creates a copy.
+        Args:
+            df: Dataframe to scale.
+            inplace: If True then it operates on the same dataframe, if False then
+                it creates a copy.
 
-        :returns: Dataframe of transformed data.
+        Returns:
+            Dataframe of transformed data.
         """
         if not inplace:
             df = df.copy()
@@ -73,11 +78,13 @@ class PowerTransformer:
         """
         Transforms the data back from the scaled space.
 
-        :param df: Dataframe to scale.
-        :param inplace: If True then it operates on the same dataframe, if False then
-            it creates a copy.
+        Args:
+            df: Dataframe to scale.
+            inplace: If True then it operates on the same dataframe, if False then
+                it creates a copy.
 
-        :returns: Dataframe of untransformed data.
+        Returns:
+            Dataframe of untransformed data.
         """
         if not inplace:
             df = df.copy()

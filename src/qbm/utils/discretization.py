@@ -16,6 +16,11 @@ class ColumnParams(TypedDict):
 
 
 class Discretizer:
+    """
+    Discretizes dataframe columns into bit representations and converts them back.
+    Columns whose names end in "_bit" are treated as single bits and are not scaled.
+    """
+
     def __init__(
         self,
         df: pd.DataFrame,
@@ -23,9 +28,12 @@ class Discretizer:
         epsilon: Mapping[str, Mapping[str, float]] = {},
     ) -> None:
         """
-        :param df: Dataframe of numerical values.
-        :param n_bits: Number of bits to discretize to.
-        :param epsilon: Optional dictionary of min/max offset values.
+        Initializes the discretizer.
+
+        Args:
+            df: Dataframe of numerical values.
+            n_bits: Number of bits to discretize to.
+            epsilon: Optional dictionary of min/max offset values.
         """
         self.columns = df.columns
         self.n_bits = n_bits
@@ -60,11 +68,13 @@ class Discretizer:
     @staticmethod
     def bit_vector_to_int(bit_vector: Sequence[int] | np.ndarray) -> int:
         """
-        Converts a bit vector to a bit string.
+        Converts a bit vector to its integer representation.
 
-        :param bit_vector: Input bit vector.
+        Args:
+            bit_vector: Input bit vector.
 
-        :returns: Bit string of the input bit vector.
+        Returns:
+            Integer representation of the input bit vector.
         """
         return int("".join(str(x) for x in bit_vector), 2)
 
@@ -73,9 +83,11 @@ class Discretizer:
         """
         Converts a bit vector to a bit string.
 
-        :param bit_vector: Input bit vector.
+        Args:
+            bit_vector: Input bit vector.
 
-        :returns: Bit string of the input bit vector.
+        Returns:
+            Bit string of the input bit vector.
         """
         return "".join(str(x) for x in bit_vector)
 
@@ -84,10 +96,12 @@ class Discretizer:
         """
         Converts the integer x to an n_bits-bit bit vector.
 
-        :param x: Integer value which to convert.
-        :param n_bits: Length of the bit vector.
+        Args:
+            x: Integer value which to convert.
+            n_bits: Length of the bit vector.
 
-        :returns: Bit vector of length n_bits.
+        Returns:
+            Bit vector of length n_bits.
         """
         return [1 if i == "1" else 0 for i in bin(x)[2:].zfill(n_bits)]
 
@@ -95,14 +109,16 @@ class Discretizer:
     @np.vectorize
     def discretize(x: float, n_bits: int, x_min: float, x_max: float) -> int:
         """
-        Convert the value x into a n-bit bit string.
+        Convert the value x into its n_bits-bit integer representation.
 
-        :param x: Float value to convert.
-        :param n_bits: Length of the bit string.
-        :param x_min: Minimum value for scaling.
-        :param x_max: Maximum value for scaling.
+        Args:
+            x: Float value to convert.
+            n_bits: Number of bits to discretize to.
+            x_min: Minimum value for scaling.
+            x_max: Maximum value for scaling.
 
-        :returns: A bit string representation of x.
+        Returns:
+            An integer representation of x.
         """
         scaling_factor = (2**n_bits - 1) / (x_max - x_min)
 
@@ -115,14 +131,16 @@ class Discretizer:
     @np.vectorize
     def undiscretize(x: float, n_bits: int, x_min: float, x_max: float) -> float:
         """
-        Convert the value x into a float from a n-bit bit string.
+        Convert the value x into a float from its n_bits-bit integer representation.
 
-        :param x: Int value to convert.
-        :param n_bits: Length of the bit string.
-        :param x_min: Minimum value for scaling.
-        :param x_max: Maximum value for scaling.
+        Args:
+            x: Int value to convert.
+            n_bits: Number of bits to discretize to.
+            x_min: Minimum value for scaling.
+            x_max: Maximum value for scaling.
 
-        :returns: A float representation of x.
+        Returns:
+            A float representation of x.
         """
         scaling_factor = (2**n_bits - 1) / (x_max - x_min)
 
@@ -133,9 +151,11 @@ class Discretizer:
         """
         Convert all columns of a dataframe to bit representation.
 
-        :param df: Dataframe which to convert.
+        Args:
+            df: Dataframe which to convert.
 
-        :returns: A discretized version of df.
+        Returns:
+            A discretized version of df.
         """
         df_discretized = df.copy()
         for column in df.columns:
@@ -152,9 +172,11 @@ class Discretizer:
         """
         Convert all columns of a dataframe to floats from bit representation.
 
-        :param df: Dataframe which to convert.
+        Args:
+            df: Dataframe which to convert.
 
-        :returns: An undiscretized version of df_discretized.
+        Returns:
+            An undiscretized version of df.
         """
         df_undiscretized = df.copy()
         for column in df.columns:
@@ -171,9 +193,11 @@ class Discretizer:
         """
         Converts a dataframe of floats to a bit array.
 
-        :param df: Dataframe which to convert.
+        Args:
+            df: Dataframe which to convert.
 
-        :param returns: Array of bits of shape (df.shape[0], self.n_bits_total).
+        Returns:
+            Array of bits of shape (df.shape[0], self.n_bits_total).
         """
         assert set(self.columns) == set(df.columns)
 
@@ -194,11 +218,13 @@ class Discretizer:
 
     def bit_array_to_df(self, bit_array: np.ndarray) -> pd.DataFrame:
         """
-        Converts bit array a dataframe of floats.
+        Converts a bit array to a dataframe of floats.
 
-        :param bit_array: Bit array which to convert.
+        Args:
+            bit_array: Bit array which to convert.
 
-        :param returns: Dataframe of shape (bit_array.shape[0], len(self.columns)).
+        Returns:
+            Dataframe of shape (bit_array.shape[0], len(self.columns)).
         """
         assert len(bit_array[0]) == self.n_bits_total
 
