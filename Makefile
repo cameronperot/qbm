@@ -1,4 +1,4 @@
-.PHONY: help sync install test test-quiet lint lint-fix format format-check typecheck check pre-commit docs clean
+.PHONY: help sync install test test-quiet lint lint-fix format format-check typecheck check pre-commit docs-build docs-serve clean
 
 help:
 	@echo "Available commands:"
