@@ -360,3 +360,7 @@ specs/
 
 # MkDocs build output
 site/
+
+.claude
+.omp
+.pi
